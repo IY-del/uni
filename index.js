@@ -6,7 +6,7 @@ const app = express();
 app.use("/public", express.static(path.join(__dirname + "/public")));
 
 app.get("/", (req, res) => {
-  res.write('Hello, World\n');
+  res.send('Hello, World\n');
 });
 
 app.use(function(req, res, next) {
