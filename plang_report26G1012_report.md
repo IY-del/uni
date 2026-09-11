@@ -4,103 +4,209 @@
 - 学籍番号: 26G1012
 - 氏名: 石井陽泰
 
-本報告書では，仕様書に記載した仕様例と実際の実行結果を対比させながら，
-サンプルプログラムが各機能を仕様どおりに実現しているかを確認する．
-各項目では，確認対象の機能，仕様書に示された仕様例，実行結果，
-およびその結果から分かることを順に示す．
+---
 
-# fontlib
+## 目次
 
-## printx の結果
+- [パターン印刷プログラム結果報告書](#パターン印刷プログラム結果報告書)
+   - [目次](#目次)
+   - [1. 報告概要](#1-報告概要)
+   - [2. fontlib 機能別テストプログラムの実行結果](#2-fontlib-機能別テストプログラムの実行結果)
+      - [2.1 基本表示機能の検証 (test\_fontlib.c)](#21-基本表示機能の検証-test_fontlibc)
+         - [検証用プログラム](#検証用プログラム)
+         - [printx の実行結果と考察](#printx-の実行結果と考察)
+            - [確認する機能](#確認する機能)
+            - [実行結果](#実行結果)
+            - [考察](#考察)
+         - [printxs の実行結果と考察](#printxs-の実行結果と考察)
+            - [確認する機能](#確認する機能-1)
+            - [実行結果](#実行結果-1)
+            - [考察](#考察-1)
+      - [2.2 パターン読み込み機能の検証 (test\_get\_pattern.c)](#22-パターン読み込み機能の検証-test_get_patternc)
+         - [検証用プログラム](#検証用プログラム-1)
+         - [load\_txt\_to\_8x8 の実行結果と考察](#load_txt_to_8x8-の実行結果と考察)
+            - [確認する機能](#確認する機能-2)
+            - [実行結果](#実行結果-2)
+            - [考察](#考察-2)
+         - [free\_memory の実行結果と考察](#free_memory-の実行結果と考察)
+            - [確認する機能](#確認する機能-3)
+            - [実行結果](#実行結果-3)
+            - [考察](#考察-3)
+      - [2.3 座標変換・サイズ計算機能の検証 (test\_get\_coord.c)](#23-座標変換サイズ計算機能の検証-test_get_coordc)
+         - [検証用プログラム](#検証用プログラム-2)
+         - [pattern\_scaled\_size の実行結果と考察](#pattern_scaled_size-の実行結果と考察)
+            - [確認する機能](#確認する機能-4)
+            - [実行結果](#実行結果-4)
+            - [考察](#考察-4)
+         - [resolve\_coord の実行結果と考察](#resolve_coord-の実行結果と考察)
+            - [確認する機能](#確認する機能-5)
+            - [実行結果](#実行結果-5)
+            - [考察](#考察-5)
+      - [2.4 パターン走査機能の検証 (test\_iterator.c)](#24-パターン走査機能の検証-test_iteratorc)
+         - [検証用プログラム](#検証用プログラム-3)
+         - [pattern\_iterator\_next (行優先走査) の実行結果と考察](#pattern_iterator_next-行優先走査-の実行結果と考察)
+            - [確認する機能](#確認する機能-6)
+            - [実行結果（抜粋）](#実行結果抜粋)
+            - [考察](#考察-6)
+         - [pattern\_iterator\_next\_h (水平優先走査) の実行結果と考察](#pattern_iterator_next_h-水平優先走査-の実行結果と考察)
+            - [確認する機能](#確認する機能-7)
+            - [実行結果（抜粋）](#実行結果抜粋-1)
+            - [考察](#考察-7)
+      - [2.5 パターン描画制御機能の検証 (test\_print\_pattern.c)](#25-パターン描画制御機能の検証-test_print_patternc)
+         - [検証用プログラム](#検証用プログラム-4)
+         - [new\_pattern\_view / new\_pattern\_view\_doublescale の実行結果と考察](#new_pattern_view--new_pattern_view_doublescale-の実行結果と考察)
+            - [確認する機能](#確認する機能-8)
+            - [実行結果](#実行結果-6)
+            - [考察](#考察-8)
+         - [print\_as\_pattern の実行結果と考察](#print_as_pattern-の実行結果と考察)
+            - [確認する機能](#確認する機能-9)
+            - [実行結果](#実行結果-7)
+            - [考察](#考察-9)
+   - [3. 統合テストプログラム (main.c) の実行結果](#3-統合テストプログラム-mainc-の実行結果)
+      - [3.1 パイプライン統合動作の検証](#31-パイプライン統合動作の検証)
+      - [3.2 実行結果と考察](#32-実行結果と考察)
+         - [確認する機能](#確認する機能-10)
+         - [実行結果（抜粋）](#実行結果抜粋-2)
+         - [考察](#考察-10)
+   - [4. 総合考察](#4-総合考察)
 
-### 確認する機能
-`flag`が0のときスペース，0以外のとき`X`を表示する機能を確認する．
+---
 
-### 仕様例
-仕様書では，`printx`の使用例として次のコードが示されている．
+## 1. 報告概要
+
+本報告書では，[パターン印刷プログラム仕様書](plang_report26G1012_spec.md) に基づいて実装された共通ライブラリ `fontlib` の各機能群（基本表示，パターン読み込み，座標変換・寸法計算，走査イテレータ，描画制御）および統合テストプログラム `main.c` について，機能単位のサンプル検証プログラムを作成・実行し，各機能が仕様どおりに動作しているかを確認した結果を報告する．
+
+各テストプログラムは，可読性およびポータビリティを担保するため，Cソースコード内でのマクロ定義（`#define`）やグローバル変数の使用を一切行わず，関数ローカル変数および公開ヘッダー `fontlib.h` のシグネチャのみを用いて記述されている．また，ディレクトリ構造をフラットに保つため，すべてのテストプログラムはライブラリ本体と同じカレントディレクトリ上に配置している．
+
+---
+
+## 2. fontlib 機能別テストプログラムの実行結果
+
+### 2.1 基本表示機能の検証 (test_fontlib.c)
+
+#### 検証用プログラム
+
+1セルの文字描画を行う `printx` および文字列描画を行う `printxs` を検証するためのテストプログラムである．
 
 ```c
-printx(1);  /* X を表示 */
-printx(0);  /* スペースを表示 */
-printx(2);  /* X を表示（0以外はすべて X） */
-```
+#include <stdio.h>
 
-また，実行例は次のように示されている．
+#include "fontlib.h"
 
-```text
-X X
-```
+int main(void) {
+  /* printx のテスト */
+  printx(1);
+  printx(0);
+  printx(2);
+  putchar('\n');
 
-### 実行結果
-```text
-X X
-```
+  /* printxs のテスト */
+  printxs(1, "ABC");
+  putchar('\n');
 
-### 考察
-仕様書では，1回目と3回目の呼び出しでは`X`が表示され，
-2回目ではスペースが表示されることが示されている．
-実行結果でも同じ並びで`X`とスペースが表示されているため，
-`printx`は`flag`の値に応じて正しく表示内容を切り替えているといえる．
+  printxs(0, "ABC");
+  putchar('\n');
 
-## printxs の結果
-
-### 確認する機能
-`flag`が0のときスペース1文字，0以外のとき`str`をそのまま表示する機能を確認する．
-
-### 仕様例
-仕様書では，`printxs`の使用例として次のコードが示されている．
-
-```c
-printxs(1, "ABC");  /* \"ABC\" を表示 */
-printxs(0, "ABC");  /* スペース1文字を表示（\"ABC\"は無視される） */
-```
-
-また，実行例は次のように示されている．
-
-```text
-ABC
-```
-
-### 実行結果
-```text
-ABC
-```
-
-### 考察
-仕様書では，`flag`が0以外の場合は引数`str`の内容がそのまま表示され，
-`flag`が0の場合は`str`の内容に関係なくスペース1文字だけが表示されるとされている．
-実行結果では，`flag=1`の呼び出しで`"ABC"`がそのまま表示されており，
-`flag=0`の呼び出しではスペースのみが表示されている．
-したがって，`printxs`は仕様どおりに動作していることが確認できる．
-
-# get_pattern
-
-## load_txt_to_8x8 の結果
-
-### 確認する機能
-テキストファイル中の0/1列から，8×8のパターン配列を複数文字分生成する機能を確認する．
-
-### 仕様例
-仕様書では，`load_txt_to_8x8`の使用例として次のコードが示されている．
-
-```c
-int (*patterns)[8][8];
-size_t n;
-
-if (load_txt_to_8x8("font_data01.txt", &patterns, &n) != 0) {
-    /* エラー処理 */
+  return 0;
 }
-
-/* patterns[0]〜patterns[n-1]に8×8のパターンが入る */
-
-free_memory(patterns);
 ```
 
-また，仕様書では
-「`font_data01.txt`に含まれる0/1列から，A〜Zなど複数文字分の8×8パターン配列が生成される」
-と説明されている．
+コンパイルおよび実行コマンド：
 
-### 実行結果
+```sh
+clang test_fontlib.c fontlib.c -o test_fontlib
+./test_fontlib
+```
+
+#### printx の実行結果と考察
+
+##### 確認する機能
+
+`flag` が 0 のときスペース，0 以外のとき `"X"` を1文字表示する機能を確認する．
+
+##### 実行結果
+
+```text
+X X
+```
+
+##### 考察
+
+仕様書では，1回目（`flag=1`）と3回目（`flag=2`）の呼び出しで `"X"` が表示され，2回目（`flag=0`）ではスペースが表示されると規定されている．実行結果でも同じ並びで `"X"` とスペースが出力されているため，`printx` は `flag` の真偽値に応じて正しく表示内容を切り替えているといえる．
+
+#### printxs の実行結果と考察
+
+##### 確認する機能
+
+`flag` が 0 のときスペース1文字，0 以外のとき第2引数 `str` の文字列を表示する機能を確認する．
+
+##### 実行結果
+
+```text
+ABC
+
+```
+
+##### 考察
+
+仕様書では，`flag` が 0 以外の場合は引数 `str` の内容が表示され，`flag` が 0 の場合は `str` の内容に関係なくスペース1文字だけが表示されるとされている．実行結果では，`flag=1` の呼び出しで `"ABC"` が表示され，`flag=0` の呼び出しではスペースのみが出力されている．したがって，`printxs` は仕様どおりに動作していることが確認できる．
+
+---
+
+### 2.2 パターン読み込み機能の検証 (test_get_pattern.c)
+
+#### 検証用プログラム
+
+テキストファイルから 8×8 のフォントパターン配列を動的に読み込む `load_txt_to_8x8` と，確保したメモリを解放する `free_memory` を検証するためのテストプログラムである．
+
+```c
+#include <stdio.h>
+
+#include "fontlib.h"
+
+int main(void) {
+  int (*patterns)[8][8];
+  size_t n;
+
+  /* load_txt_to_8x8 のテスト */
+  if (load_txt_to_8x8("font_data01.txt", &patterns, &n) != 0) {
+    fprintf(stderr, "load_txt_to_8x8 failed (font_data01.txt)\n");
+    return 1;
+  }
+
+  printf("n = %zu\n", n);
+
+  if (n > 0) {
+    for (size_t y = 0; y < 8; y++) {
+      for (size_t x = 0; x < 8; x++) {
+        printf("%d", patterns[0][y][x]);
+      }
+      putchar('\n');
+    }
+  }
+
+  /* free_memory のテスト */
+  free_memory(patterns);
+
+  return 0;
+}
+```
+
+コンパイルおよび実行コマンド：
+
+```sh
+clang test_get_pattern.c fontlib.c -o test_get_pattern
+./test_get_pattern
+```
+
+#### load_txt_to_8x8 の実行結果と考察
+
+##### 確認する機能
+
+テキストファイル中の 0/1 列から，8×8 のパターン配列を複数文字分生成する機能を確認する．
+
+##### 実行結果
+
 ```text
 n = 26
 00011000
@@ -113,168 +219,214 @@ n = 26
 00000000
 ```
 
-### 考察
-仕様書では，0/1列を8×8単位でまとめて複数文字分のパターン配列を生成するとされている．
-実行結果では，読み込まれた文字数が `n = 26` となっており，
-`font_data01.txt` から 26 文字分の8×8パターンが生成されたことが分かる．
-また，先頭文字のパターンとして 8 行 × 8 列の0/1列が正しく出力されているため，
-`load_txt_to_8x8` はテキストファイル中のビット列を 8×8 単位で正しく読み込み，
-パターン配列として格納できているといえる．
+##### 考察
 
-## free_memory の結果
+仕様書では，0/1 列を 8×8 単位でまとめて複数文字分のパターン配列を生成するとされている．実行結果では，読み込まれた文字数が `n = 26` となっており，`font_data01.txt` から 26 文字分の 8×8 パターンが生成されたことが分かる．また，先頭文字のパターンとして 8 行 × 8 列のビット列が正しく出力されているため，`load_txt_to_8x8` はファイルを正しく解釈し，2次元配列ポインタとして格納できているといえる．
 
-### 確認する機能
-`load_txt`または`load_txt_to_8x8`で確保したメモリを，
-`void *`を用いて正しく解放できる機能を確認する．
+#### free_memory の実行結果と考察
 
-### 仕様例
-仕様書では，次の使用例が示されている．
+##### 確認する機能
 
-```c
-free_memory(patterns);  /* int (*)[8][8] でもキャスト不要 */
-free_memory(flat);      /* int * でも同様に呼べる */
-```
+`load_txt_to_8x8` で確保した動的メモリ領域を，`void *` 型で受け取り正常に解放できる機能を確認する．
 
-### 実行結果
-異常終了なし
+##### 実行結果
 
-### 考察
-仕様書では，`free_memory`が`void *`で引数を受け取るため，
-`int *`でも`int (*)[8][8]`でもキャスト無しで渡せると説明されている．
-実行時に異常終了が発生せず，確保したメモリを正常に解放できているため，
-`free_memory`は仕様どおりに利用できることが確認できる．
+プログラムがセグメンテーション違反などの異常終了を起こさず，終了コード 0 で正常終了した．
 
-# get_coord
+##### 考察
 
-## pattern_scaled_size の結果
+`free_memory` は `void *` で引数を受け取るため，`int (*)[8][8]` 型のポインタでも明示的なキャストなしで渡すことができる．実行時に異常終了が発生せず，動的メモリを正常に解放できているため，仕様どおりに機能していることが確認できた．
 
-### 確認する機能
-回転指定とスケール倍率に応じて，出力幅・高さが正しく計算される機能を確認する．
+---
 
-### 仕様例
-仕様書では，`pattern_scaled_size`について次のように説明されている．
+### 2.3 座標変換・サイズ計算機能の検証 (test_get_coord.c)
 
-- 回転が0度・180度の場合
-  - `width = view->w * view->scale_w`
-  - `height = view->h * view->scale_h`
-- 回転が90度・270度の場合
-  - `width = view->h * view->scale_w`
-  - `height = view->w * view->scale_h`
+#### 検証用プログラム
 
-また，使用例は次のとおりである．
+各回転角度およびスケール倍率における出力サイズの計算（`pattern_scaled_size`）と，出力座標から元パターン座標への逆写像（`resolve_coord`）をまとめて検証するテストプログラムである．
 
 ```c
-PatternSize size = pattern_scaled_size(&view);
-size_t out_w = size.width;
-size_t out_h = size.height;
-```
+#include <stdio.h>
 
-### 実行結果
-rotate0:               `size=(w=8,h=4)`\
-rotate90:              `size=(w=4,h=8)`\
-rotate180:             `size=(w=8,h=4)`\
-rotate270:             `size=(w=4,h=8)`\
-scale_w3_h2:           `size=(w=24,h=8)`
+#include "fontlib.h"
 
-### 考察
-実行結果では，`rotate0` のとき `size=(w=8,h=4)`，
-`rotate90` のとき `size=(w=4,h=8)` となっており，
-90度回転によって幅と高さが入れ替わっていることを確認できた．
-また，`rotate180` では再び `size=(w=8,h=4)` となるため，
-0度・180度では元の軸，90度・270度では入れ替わった軸を用いるという
-仕様どおりの計算が行われていることが分かる．
+static void report_coord(const char* label, const PatternView* view, size_t ox,
+                         size_t oy) {
+  PatternSize size = pattern_scaled_size(view);
+  PatternCoord src = resolve_coord(view, ox, oy);
+  printf("%-22s size=(w=%zu,h=%zu) resolve(%zu,%zu) -> (%zu,%zu)\n", label,
+         size.width, size.height, ox, oy, src.x, src.y);
+}
 
-さらに，`scale_w=3`，`scale_h=2` を設定した場合には，
-幅と高さがそれぞれ別の倍率で拡大されていた．
-したがって，`pattern_scaled_size` は回転による軸の切り替えと，
-横・縦方向の独立したスケーリングを正しく組み合わせて
-出力サイズを求めているといえる．
+int main(void) {
+  int dummy[1][8][8] = {{{0}}};
+  PatternView view = new_pattern_view(1, dummy);
 
-## resolve_coord の結果
+  /* 非正方形にして w/h の入れ替わりを可視化する */
+  view.w = 8;
+  view.h = 4;
 
-### 確認する機能
-出力座標`(out_x, out_y)`から，スケール倍率と回転指定を考慮して，
-元のパターン上の座標`(src_x, src_y)`を正しく求める機能を確認する．
+  /* 1. 回転なし（基準確認） */
+  view.rotation = ROTATE_0;
+  report_coord("rotate0", &view, 0, 0);
+  report_coord("rotate0 corner", &view, 7, 3);
 
-### 仕様例
-仕様書では，`resolve_coord`の処理の流れとして次が示されている．
+  /* 2. 90度回転（w/hが入れ替わるはず） */
+  view.rotation = ROTATE_90;
+  report_coord("rotate90", &view, 0, 0);
+  report_coord("rotate90 corner", &view, 3, 7);
 
-- `logical_x = out_x / view->scale_w`
-- `logical_y = out_y / view->scale_h`
-- `rotate_coord(view, logical_x, logical_y)`を呼び出し，回転後の座標を得る．
+  /* 3. 180度回転 */
+  view.rotation = ROTATE_180;
+  report_coord("rotate180", &view, 0, 0);
+  report_coord("rotate180 corner", &view, 7, 3);
 
-また，使用例は次のとおりである．
+  /* 4. 270度回転 */
+  view.rotation = ROTATE_270;
+  report_coord("rotate270", &view, 0, 0);
+  report_coord("rotate270 corner", &view, 3, 7);
 
-```c
-PatternCoord src = resolve_coord(&view, out_x, out_y);
-/* src.x, src.y を使ってパターン配列にアクセスする */
-```
+  /* 5. 非対称スケール（scale_wとscale_hを別々の値にして独立性を確認） */
+  view.rotation = ROTATE_0;
+  view.scale_w = 3;
+  view.scale_h = 2;
+  report_coord("scale_w3_h2", &view, 0, 0);
 
-### 実行結果
-rotate0: `resolve(0,0) -> (0,0)`\
-rotate0 corner: `resolve(7,3) -> (7,3)`\
-rotate90: `resolve(0,0) -> (0,3)`\
-rotate90 corner: `resolve(3,7) -> (7,0)`\
-rotate180: `resolve(0,0) -> (7,3)`\
-rotate180 corner: `resolve(7,3) -> (0,0)`\
-rotate270: `resolve(0,0) -> (7,0)`\
-rotate270 corner: `resolve(3,7) -> (0,3)`\
-scale_w3_h2: `resolve(0,0) -> (0,0)`\
-rotate90_scale_w3_h2: `resolve(0,0) -> (0,3)`
+  /* 6. 回転90度 + 非対称スケールの組み合わせ */
+  view.rotation = ROTATE_90;
+  report_coord("rotate90_scale_w3_h2", &view, 0, 0);
 
-### 考察
-実行結果では，回転なしの `rotate0` において
-`resolve(0,0) -> (0,0)`，`resolve(7,3) -> (7,3)` となっており，
-回転なしでは出力座標が元のパターン座標にそのまま対応していることを確認できた．
-
-また，`rotate90` では `resolve(0,0) -> (0,3)`，
-`resolve(3,7) -> (7,0)`，`rotate180` では
-`resolve(0,0) -> (7,3)`，`resolve(7,3) -> (0,0)`，
-`rotate270` では `resolve(0,0) -> (7,0)`，
-`resolve(3,7) -> (0,3)` となっていた．
-このことから，各回転角度に応じて，
-出力座標が元のパターン上の対応位置へ正しく写像されていることが分かる．
-
-さらに，`scale_w=3, scale_h=2` の場合でも
-`scale_w3_h2` では `resolve(0,0) -> (0,0)`，
-`rotate90_scale_w3_h2` では `resolve(0,0) -> (0,3)` となっていた．
-したがって，`resolve_coord` はスケールによって出力座標を論理座標へ戻した後，
-回転に応じた変換を正しく適用できているといえる．
-
-# iterator
-
-## new_iter / pattern_iterator_next の結果
-
-### 確認する機能
-`PatternView`から初期化したイテレータが，
-行優先でセルイベント・改行イベント・終了イベントを正しく返す機能を確認する．
-
-### 仕様例
-仕様書では，`new_iter`の使用例として次のコードが示されている．
-
-```c
-PatternIterator it = new_iter(&view);
-PatternStep step;
-```
-
-また，`pattern_iterator_next`の使用例として次のコードが示されている．
-
-```c
-PatternIterator it = new_iter(&view);
-PatternStep step;
-while (pattern_iterator_next(&it, &step) != PATTERN_EVENT_END) {
-    if (step.kind == PATTERN_EVENT_CELL) {
-        /* step.ch, step.src_x, step.src_y を使って描画 */
-    } else if (step.kind == PATTERN_EVENT_NEWLINE) {
-        putchar('\n');
-    }
+  return 0;
 }
 ```
 
-仕様書では，`x >= out_w`のとき改行イベントを返し，
-全文字の走査終了後に`PATTERN_EVENT_END`を返すと説明されている．
+コンパイルおよび実行コマンド：
 
-### 実行結果
+```sh
+clang test_get_coord.c fontlib.c -o test_get_coord
+./test_get_coord
+```
+
+#### pattern_scaled_size の実行結果と考察
+
+##### 確認する機能
+
+回転指定（0°, 90°, 180°, 270°）とスケール倍率に応じて，出力幅・高さが正しく計算される機能を確認する．
+
+##### 実行結果
+
+```text
+rotate0:               size=(w=8,h=4)
+rotate90:              size=(w=4,h=8)
+rotate180:             size=(w=8,h=4)
+rotate270:             size=(w=4,h=8)
+scale_w3_h2:           size=(w=24,h=8)
+rotate90_scale_w3_h2:  size=(w=12,h=16)
+```
+
+##### 考察
+
+元パターンを `w=8, h=4` に設定して検証した結果，`rotate0` では `size=(w=8,h=4)`，`rotate90` では `size=(w=4,h=8)` となっており，90度回転によって幅と高さの軸が入れ替わっていることを確認できた．また，`rotate180` では再び `size=(w=8,h=4)` となり，0度・180度では元の軸，90度・270度では入れ替わった軸を用いるという仕様どおりの計算が行われている．
+
+さらに，`scale_w=3, scale_h=2` を設定した場合（`scale_w3_h2`）には，幅と高さがそれぞれ別の倍率で拡大され `size=(w=24,h=8)` となっている．したがって，`pattern_scaled_size` は回転による軸の切り替えと独立したスケーリングを正しく組み合わせて出力サイズを算出できているといえる．
+
+#### resolve_coord の実行結果と考察
+
+##### 確認する機能
+
+出力座標 `(out_x, out_y)` から，スケール倍率と回転指定を考慮して，元パターン上の座標 `(src_x, src_y)` を正しく逆変換する機能を確認する．
+
+##### 実行結果
+
+```text
+rotate0:               resolve(0,0) -> (0,0)
+rotate0 corner:        resolve(7,3) -> (7,3)
+rotate90:              resolve(0,0) -> (0,3)
+rotate90 corner:       resolve(3,7) -> (7,0)
+rotate180:             resolve(0,0) -> (7,3)
+rotate180 corner:      resolve(7,3) -> (0,0)
+rotate270:             resolve(0,0) -> (7,0)
+rotate270 corner:      resolve(3,7) -> (0,3)
+scale_w3_h2:           resolve(0,0) -> (0,0)
+rotate90_scale_w3_h2:  resolve(0,0) -> (0,3)
+```
+
+##### 考察
+
+回転なしの `rotate0` では，出力座標が元パターン座標にそのまま対応している．`rotate90` では `resolve(0,0) -> (0,3)`，`resolve(3,7) -> (7,0)` となり，時計回り90度の回転が正しく反映されている．`rotate180` では上下左右が完全に反転し，`rotate270` でも期待どおりの座標が得られている．
+
+また，拡大倍率を含む場合でも，出力座標を論理座標へ戻した後に回転変換が適用されており，`resolve_coord` は拡大・回転の双方を考慮した正しい逆写像を実現できているといえる．
+
+---
+
+### 2.4 パターン走査機能の検証 (test_iterator.c)
+
+#### 検証用プログラム
+
+イテレータの初期化（`new_iter`），行優先走査（`pattern_iterator_next`），および水平優先走査（`pattern_iterator_next_h`）をまとめて検証するテストプログラムである．
+
+```c
+#include <stdio.h>
+
+#include "fontlib.h"
+
+static void run_next(const PatternView* view) {
+  PatternIterator it = new_iter(view);
+  PatternStep step;
+
+  printf("pattern_iterator_next\n");
+  while (pattern_iterator_next(&it, &step) != PATTERN_EVENT_END) {
+    if (step.kind == PATTERN_EVENT_CELL) {
+      printf("CELL ch=%zu src=(%zu,%zu)\n", step.ch, step.src_x, step.src_y);
+    } else if (step.kind == PATTERN_EVENT_NEWLINE) {
+      printf("NEWLINE\n");
+    }
+  }
+  printf("END\n");
+}
+
+static void run_next_h(const PatternView* view) {
+  PatternIterator it = new_iter(view);
+  PatternStep step;
+
+  printf("pattern_iterator_next_h\n");
+  while (pattern_iterator_next_h(&it, &step) != PATTERN_EVENT_END) {
+    if (step.kind == PATTERN_EVENT_CELL) {
+      printf("CELL ch=%zu src=(%zu,%zu)\n", step.ch, step.src_x, step.src_y);
+    } else if (step.kind == PATTERN_EVENT_NEWLINE) {
+      printf("NEWLINE\n");
+    }
+  }
+  printf("END\n");
+}
+
+int main(void) {
+  int dummy[2][8][8] = {{{0}}};
+  PatternView view = new_pattern_view(2, dummy);
+
+  run_next(&view);
+  putchar('\n');
+  run_next_h(&view);
+
+  return 0;
+}
+```
+
+コンパイルおよび実行コマンド：
+
+```sh
+clang test_iterator.c fontlib.c -o test_iterator
+./test_iterator
+```
+
+#### pattern_iterator_next (行優先走査) の実行結果と考察
+
+##### 確認する機能
+
+`PatternView` から初期化したイテレータが，行優先でセルイベント（`CELL`）・改行イベント（`NEWLINE`）・終了イベント（`END`）を正しく返す機能を確認する．
+
+##### 実行結果（抜粋）
+
 ```text
 pattern_iterator_next
 CELL ch=0 src=(0,7)
@@ -288,51 +440,6 @@ CELL ch=0 src=(0,0)
 NEWLINE
 CELL ch=0 src=(1,7)
 CELL ch=0 src=(1,6)
-CELL ch=0 src=(1,5)
-CELL ch=0 src=(1,4)
-CELL ch=0 src=(1,3)
-CELL ch=0 src=(1,2)
-CELL ch=0 src=(1,1)
-CELL ch=0 src=(1,0)
-NEWLINE
-CELL ch=0 src=(2,7)
-CELL ch=0 src=(2,6)
-CELL ch=0 src=(2,5)
-CELL ch=0 src=(2,4)
-CELL ch=0 src=(2,3)
-CELL ch=0 src=(2,2)
-CELL ch=0 src=(2,1)
-CELL ch=0 src=(2,0)
-NEWLINE
-...
-NEWLINE
-CELL ch=0 src=(7,7)
-CELL ch=0 src=(7,6)
-CELL ch=0 src=(7,5)
-CELL ch=0 src=(7,4)
-CELL ch=0 src=(7,3)
-CELL ch=0 src=(7,2)
-CELL ch=0 src=(7,1)
-CELL ch=0 src=(7,0)
-NEWLINE
-CELL ch=1 src=(0,7)
-CELL ch=1 src=(0,6)
-CELL ch=1 src=(0,5)
-CELL ch=1 src=(0,4)
-CELL ch=1 src=(0,3)
-CELL ch=1 src=(0,2)
-CELL ch=1 src=(0,1)
-CELL ch=1 src=(0,0)
-NEWLINE
-CELL ch=1 src=(1,7)
-CELL ch=1 src=(1,6)
-CELL ch=1 src=(1,5)
-CELL ch=1 src=(1,4)
-CELL ch=1 src=(1,3)
-CELL ch=1 src=(1,2)
-CELL ch=1 src=(1,1)
-CELL ch=1 src=(1,0)
-NEWLINE
 ...
 NEWLINE
 CELL ch=1 src=(7,7)
@@ -346,44 +453,18 @@ CELL ch=1 src=(7,0)
 END
 ```
 
-### 考察
-実行結果では，`pattern_iterator_next` において `CELL` が一定順序で出力され，
-行の終端で `NEWLINE` が挿入された後，最後に `END` が出力されていた．
-このことから，通常の反復処理では出力領域を1セルずつ走査しながら，
-改行位置を正しく判定できていることが確認できる．
-途中で異常終了せず `END` に到達しているため，
-`new_iter` による初期化と反復終了条件の判定も正常に機能していることが確認できた．
-各 `CELL` に含まれる `src=(x,y)` も連続的に変化しており，
-反復処理の中で元パターン上の参照位置が正しく更新されていることが読み取れる．
+##### 考察
 
-## pattern_iterator_next_h の結果
+行の終端（8セル目）に到達するごとに `NEWLINE` が発行され，1文字分（8行）の走査完了後に次の文字（`ch=1`）へ進み，全2文字の走査終了後に `END` が出力されている．途中で異常終了せず `END` に到達しているため，`new_iter` による初期化と反復終了条件の判定が正常に機能していることが確認できた．
 
-### 確認する機能
-水平優先で走査した場合に，文字の切替えと行の切替えの順序が
-`pattern_iterator_next`とは異なる機能を確認する．
+#### pattern_iterator_next_h (水平優先走査) の実行結果と考察
 
-### 仕様例
-仕様書では，`pattern_iterator_next_h`の使用例として次のコードが示されている．
+##### 確認する機能
 
-```c
-PatternIterator it = new_iter(&view);
-PatternStep step;
-while (pattern_iterator_next_h(&it, &step) != PATTERN_EVENT_END) {
-    if (step.kind == PATTERN_EVENT_CELL) {
-        /* 水平優先の描画に使う */
-    } else if (step.kind == PATTERN_EVENT_NEWLINE) {
-        putchar('\n');
-    }
-}
-```
+水平優先走査において，文字の切り替えと行の切り替えの順序が文字単位優先に切り替わることを確認する．
 
-また，仕様書では次のように説明されている．
+##### 実行結果（抜粋）
 
-- 横方向に走査して端に来たら `x=0, ch++`として次の文字へ進む．
-- `ch >= view->count`に達すると，`ch=0, y++`として行を進める．
-- 行末まで達した場合に `PATTERN_EVENT_END` を返す．
-
-### 実行結果
 ```text
 pattern_iterator_next_h
 CELL ch=0 src=(0,7)
@@ -403,210 +484,168 @@ CELL ch=1 src=(0,2)
 CELL ch=1 src=(0,1)
 CELL ch=1 src=(0,0)
 NEWLINE
-CELL ch=0 src=(1,7)
-CELL ch=0 src=(1,6)
-CELL ch=0 src=(1,5)
-CELL ch=0 src=(1,4)
-CELL ch=0 src=(1,3)
-CELL ch=0 src=(1,2)
-CELL ch=0 src=(1,1)
-CELL ch=0 src=(1,0)
-CELL ch=1 src=(1,7)
-CELL ch=1 src=(1,6)
-CELL ch=1 src=(1,5)
-CELL ch=1 src=(1,4)
-CELL ch=1 src=(1,3)
-CELL ch=1 src=(1,2)
-CELL ch=1 src=(1,1)
-CELL ch=1 src=(1,0)
-NEWLINE
 ...
-NEWLINE
-CELL ch=0 src=(7,7)
-CELL ch=0 src=(7,6)
-CELL ch=0 src=(7,5)
-CELL ch=0 src=(7,4)
-CELL ch=0 src=(7,3)
-CELL ch=0 src=(7,2)
-CELL ch=0 src=(7,1)
-CELL ch=0 src=(7,0)
-CELL ch=1 src=(7,7)
-CELL ch=1 src=(7,6)
-CELL ch=1 src=(7,5)
-CELL ch=1 src=(7,4)
-CELL ch=1 src=(7,3)
-CELL ch=1 src=(7,2)
-CELL ch=1 src=(7,1)
-CELL ch=1 src=(7,0)
 END
 ```
 
-### 考察
-`pattern_iterator_next_h` の結果では，`CELL` の並び方が
-`pattern_iterator_next` の場合と異なっており，文字単位を優先した走査順に
-切り替わっていることが分かる．
-したがって，2つの反復関数は同じパターン列を対象としつつも，
-異なる順序で走査するという役割の違いを正しく実現できているといえる．
+##### 考察
 
-# print_pattern
+`pattern_iterator_next_h` の結果では，`ch=0` の第1行に続いてすぐに `ch=1` の第1行が走査され，その後に `NEWLINE` が発行されている．したがって，2つの反復関数は同じパターン列を対象としつつも，異なる順序で走査するという役割の違いを正しく実現できているといえる．
 
-## new_pattern_view / new_pattern_view_doublescale の結果
+---
 
-### 確認する機能
-標準倍率の`PatternView`と2倍スケールの`PatternView`が，
-仕様書で示された初期値を持つ機能を確認する．
+### 2.5 パターン描画制御機能の検証 (test_print_pattern.c)
 
-### 仕様例
-仕様書では，`new_pattern_view`について次のように説明されている．
+#### 検証用プログラム
 
-- 高さ・幅を `PATTERN_DEFAULT_H`/`PATTERN_DEFAULT_W`（8×8）に設定．
-- `string`フィールドを `"X"` に設定．
-- スケール倍率を `PATTERN_SCALE_NORMAL`（1倍）に設定．
-- 回転方向を `ROTATE_90` に設定．
-
-また，`new_pattern_view_doublescale`については，
-`new_pattern_view(count, pattern)`で初期化した後，
-`scale_w`と`scale_h`を`PATTERN_SCALE_DOUBLE`（2倍）に変更すると説明されている．
-
-使用例は次のとおりである．
+描画コンテキストの初期化（`new_pattern_view`, `new_pattern_view_doublescale`）と画面への文字パターン描画（`print_as_pattern`）を検証するテストプログラムである．
 
 ```c
-PatternView view = new_pattern_view(3, patterns);
-print_as_pattern(&view);
+#include <stdio.h>
 
-PatternView view2x = new_pattern_view_doublescale(3, patterns);
-print_as_pattern(&view2x);
+#include "fontlib.h"
+
+int main(void) {
+  int patterns[1][8][8] = {{{0, 0, 1, 1, 0, 0, 0, 0},
+                            {0, 0, 1, 1, 0, 0, 0, 0},
+                            {0, 0, 1, 1, 0, 0, 0, 0},
+                            {1, 1, 1, 1, 1, 1, 0, 0},
+                            {1, 1, 0, 0, 1, 1, 0, 0},
+                            {1, 1, 0, 0, 1, 1, 0, 0},
+                            {1, 1, 0, 0, 1, 1, 0, 0},
+                            {0, 0, 0, 0, 0, 0, 0, 0}}};
+
+  /* 等倍ビューの生成と検証 */
+  PatternView view = new_pattern_view(1, patterns);
+  printf("normal: h=%zu w=%zu scale_w=%u scale_h=%u rotation=%d\n", view.h,
+         view.w, view.scale_w, view.scale_h, view.rotation);
+  print_as_pattern(&view);
+
+  /* 2倍スケールビューの生成と検証 */
+  PatternView view2x = new_pattern_view_doublescale(1, patterns);
+  printf("double: h=%zu w=%zu scale_w=%u scale_h=%u rotation=%d\n", view2x.h,
+         view2x.w, view2x.scale_w, view2x.scale_h, view2x.rotation);
+  print_as_pattern(&view2x);
+
+  return 0;
+}
 ```
 
-### 実行結果
-normal:
-```text
-h=8 w=8 scale_w=1 scale_h=1 rotation=1
-```
-double:
-```text
-h=8 w=8 scale_w=2 scale_h=2 rotation=1
-```
-ここで`rotation=1`はROTATE_90を意味する．
-
-### 考察
-実行結果では，`new_pattern_view` によって生成した `PatternView` について
-`h=8`，`w=8`，`scale_w=1`，`scale_h=1`，`rotation=0` が表示されていた．
-このことから，通常表示用のビューでは，デフォルトサイズ・等倍スケール・回転なし
-という初期設定が正しく与えられていることが確認できる．
-
-また，`new_pattern_view_doublescale` によって生成した `PatternView` では，
-`h=8`，`w=8` はそのままに，`scale_w=2`，`scale_h=2` へ変更されていた．
-したがって，この関数は通常表示用の設定を引き継ぎつつ，
-拡大表示に必要な倍率設定だけを適切に変更できているといえる．
-
-## print_as_pattern の結果
-
-### 確認する機能
-`PatternView`に基づいてパターンを走査し，
-`view->string`またはスペースを用いて大きな文字パターンを表示する機能を確認する．
-
-### 仕様例
-仕様書では，`print_as_pattern`の使用例として次のコードが示されている．
-
-```c
-int (*patterns)[8][8];
-size_t n;
-/* get_patternでpatternsとnを用意する想定 */
-
-PatternView view = new_pattern_view(n, patterns);
-print_as_pattern(&view);
-```
-
-また，仕様書では処理の流れとして次のように説明されている．
-
-- `int (*pattern)[view->h][view->w] = view->pattern;`としてアクセス可能な形にキャストする．
-- `PatternIterator it = new_iter(view);`でイテレータを初期化する．
-- `while (pattern_iterator_next(&it, &step))`で走査する．
-- `PATTERN_EVENT_CELL`では`printxs(...)`を呼び出してセル値に応じた表示を行う．
-- `PATTERN_EVENT_NEWLINE`では改行文字を出力する．
-- 最後に改行を1つ追加する．
-
-### 実行結果
-pattern:
-```c
-{{
-    {0, 0, 1, 1, 0, 0, 0, 0},
-    {0, 0, 1, 1, 0, 0, 0, 0},
-    {0, 0, 1, 1, 0, 0, 0, 0},
-    {1, 1, 1, 1, 1, 1, 0, 0},
-    {1, 1, 0, 0, 1, 1, 0, 0},
-    {1, 1, 0, 0, 1, 1, 0, 0},
-    {1, 1, 0, 0, 1, 1, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0}
-}}
-```
-normal:
-```text
- XXXX
- XXXX
-    XXXX
-    XXXX
- XXXX
- XXXX
-
-
-```
-double
-```text
-  XXXXXXXX
-  XXXXXXXX
-  XXXXXXXX
-  XXXXXXXX
-        XXXXXXXX
-        XXXXXXXX
-        XXXXXXXX
-        XXXXXXXX
-  XXXXXXXX
-  XXXXXXXX
-  XXXXXXXX
-  XXXXXXXX
-
-
-
-
-```
-
-### 考察
-実行結果では，通常表示時に入力した 8×8 パターンが `X` とスペースによって
-画面上に正しく描画されていた．
-行ごとの並びを見ると，0 の部分は空白，1 の部分は `X` として出力されており，
-元のビットパターンの形が崩れずに再現されていることが分かる．
-
-さらに，2倍表示時には通常表示と同じ図形を保ったまま，
-各セルが横方向・縦方向の両方に拡大されて出力されていた．
-このことから，`print_as_pattern` は `PatternView` に含まれるスケール設定を正しく参照し，
-通常表示と拡大表示のどちらに対しても適切な描画処理を行えていると確認できた．
-
-# main
-
-## main の結果
-
-### 確認する機能
-フォントデータファイルの読み込みから，
-パターン配列の生成，表示用ビューの生成，大きな文字としての出力までの
-一連の処理が仕様どおりに動作することを確認する．
-
-### 仕様例
-仕様書では，`main`の使用例として次の実行方法が示されている．
+コンパイルおよび実行コマンド：
 
 ```sh
-clang main.c get_pattern.c print_pattern.c get_coord.c iterator.c fontlib.c -o main
+clang test_print_pattern.c fontlib.c -o test_print_pattern
+./test_print_pattern
+```
+
+#### new_pattern_view / new_pattern_view_doublescale の実行結果と考察
+
+##### 確認する機能
+
+標準倍率の `PatternView` と2倍スケールの `PatternView` が，仕様書で示された初期値を持つことを確認する．
+
+##### 実行結果
+
+```text
+normal: h=8 w=8 scale_w=1 scale_h=1 rotation=1
+double: h=8 w=8 scale_w=2 scale_h=2 rotation=1
+```
+
+※ `rotation=1` は `ROTATE_90` を表す．
+
+##### 考察
+
+`new_pattern_view` で生成したビューでは `h=8, w=8, scale_w=1, scale_h=1, rotation=1` が出力され，デフォルトサイズ・等倍スケール・90°回転という初期設定が正しく与えられている．また，`new_pattern_view_doublescale` では他の設定を引き継ぎつつ `scale_w=2, scale_h=2` のみに変更されており，拡大表示に必要な倍率設定だけを適切に変更できているといえる．
+
+#### print_as_pattern の実行結果と考察
+
+##### 確認する機能
+
+`PatternView` に基づいてパターンを走査し，`view->string`（`"X"`）またはスペースを用いて大きな文字パターンを表示する機能を確認する．
+
+##### 実行結果
+
+```text
+normal:
+ XXXX
+ XXXX
+    XXXX
+    XXXX
+ XXXX
+ XXXX
+
+
+double:
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+        XXXXXXXX
+        XXXXXXXX
+        XXXXXXXX
+        XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+
+
+
+
+```
+
+##### 考察
+
+通常表示時に入力した 8×8 パターンが `"X"` とスペースによって画面上に正しく描画されている．行ごとの並びを見ると，0 の部分は空白，1 の部分は `"X"` として出力されており，ビットパターンの形状が崩れずに再現されている．
+
+さらに2倍表示時には，相似形を保ったまま各セルが縦横 2×2 文字に拡大されて出力されている．このことから，`print_as_pattern` は `PatternView` に含まれるスケール設定を正しく参照し，等倍および拡大表示の双方で適切な描画処理を行えていると確認できた．
+
+---
+
+## 3. 統合テストプログラム (main.c) の実行結果
+
+### 3.1 パイプライン統合動作の検証
+
+フォントデータファイルの読み込みから，パターン配列生成，拡大ビュー構築，画面への大きな文字パターン描画，およびメモリ解放までのパイプライン処理を一連で統合検証するプログラムである．
+
+```c
+#include <stdio.h>
+
+#include "fontlib.h"
+
+int main(void) {
+  int (*patterns)[8][8];
+  size_t n;
+
+  int ret = load_txt_to_8x8("font_data02.txt", &patterns, &n);
+  if (ret != 0) {
+    fprintf(stderr, "failed to load font data: %d\n", ret);
+    return 1;
+  }
+
+  PatternView view = new_pattern_view_doublescale(n, patterns);
+  print_as_pattern(&view);
+
+  free_memory(patterns);
+}
+```
+
+コンパイルおよび実行コマンド：
+
+```sh
+clang main.c fontlib.c -o main
 ./main
 ```
 
-また，仕様書では，
-「フォントデータファイル`font_data01.txt`から0/1のビット列を読み込み，
-8×8のフォントパターン配列を生成し，
-`print_pattern`ライブラリでこれらのパターンを大きな文字として表示する」
-と説明されている．
+---
 
-実行例として，次のような出力が示されている．
+### 3.2 実行結果と考察
+
+#### 確認する機能
+
+フォントデータファイル（`font_data02.txt`）を読み込み，2倍拡大表示ビューを用いて複数文字分のフォントパターンを連続描画し，正常に終了することを確認する．
+
+#### 実行結果（抜粋）
 
 ```text
   XX
@@ -640,40 +679,16 @@ clang main.c get_pattern.c print_pattern.c get_coord.c iterator.c fontlib.c -o m
 ...
 ```
 
-### 実行結果
-```text
-  XX
-  XX
-  XXXXXXXXXXXX
-  XXXXXXXXXXXX
-  XX    XX    XX
-  XX    XX    XX
-        XX    XX
-        XX    XX
-  XX    XX    XX
-  XX    XX    XX
-  XXXXXXXXXXXX
-  XXXXXXXXXXXX
-  XX
-  XX
+#### 考察
 
+ファイル読み込みから回転・拡大を施した端末描画，メモリ解放までが連携して実行され，画面上にアルファベットの大文字パターンが縦横2倍サイズで正確に出力された．これにより，ライブラリ `fontlib` を構成する全機能が破綻なく協調して動作することが確認された．
 
-  XX          XX
-  XX          XX
-  XXXXXXXXXXXXXX
-  XXXXXXXXXXXXXX
-  XX    XX    XX
-  XX    XX    XX
-  XX    XX    XX
-  XX    XX    XX
-  XX    XX    XX
-  XX    XX    XX
-    XXXX  XXXX
-    XXXX  XXXX
-...
-```
-### 考察
-仕様書では，フォントデータの読み込みから最終表示までの一連の処理を
-`main`が担当するとされている．
-実行結果が仕様書の実行例と同様の大きな文字パターンになっており，
-各モジュールが連携して仕様どおりに動作していることが確認できる．
+---
+
+## 4. 総合考察
+
+本検証を通じて，以下の設計目標がすべて満たされていることが確認された．
+
+1. **ライブラリ設計とテストプログラムの分離**: パターン表示に関するすべての基盤機能を `fontlib` に集約し，テストプログラム（機能別の `test_*.c` および統合検証用の `main.c`）をフラットに配置したことで，シンプルかつ堅牢なファイル構成を実現した．
+2. **高い検証性と制約の遵守**: 各機能群に対応するテストプログラムを独立させ，ソースコード内でのマクロ定義（`#define`）やグローバル変数を一切使用しないクリーンな実装によって，高い可読性と再現性をもった検証が行えることを実証した．
+3. **ビルドおよび運用の単純化**: サンプルコードをサブディレクトリに閉じ込めることなく同一階層に展開したことで，相対パス参照やインクルードパス指定が不要となり，初心者や外部環境でも極めて容易にビルド・検証できる構成となった．
