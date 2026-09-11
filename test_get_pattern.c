@@ -25,6 +25,7 @@ int main(void) {
 
   /* free_memory のテスト */
   free_memory(patterns);
+  printf("free_memory: success\n");
 
   return 0;
 }

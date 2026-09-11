@@ -10,126 +10,38 @@
 
 ## 目次
 
-- [パターン印刷ライブラリ (fontlib) 仕様書](#パターン印刷ライブラリ-fontlib-仕様書)
-   - [目次](#目次)
-   - [1. 概要と構成](#1-概要と構成)
-      - [1.1 概要](#11-概要)
-      - [1.2 機能構成と責務](#12-機能構成と責務)
-      - [1.3 コンパイルおよびライブラリ構築方法](#13-コンパイルおよびライブラリ構築方法)
-         - [静的ライブラリの構築とリンク](#静的ライブラリの構築とリンク)
-         - [動的ライブラリの構築とリンク](#動的ライブラリの構築とリンク)
-   - [2. 共通データ構造および定数定義](#2-共通データ構造および定数定義)
-      - [2.1 定数定義](#21-定数定義)
-      - [2.2 列挙型定義](#22-列挙型定義)
-         - [PatternRotation](#patternrotation)
-         - [PatternEvent](#patternevent)
-      - [2.3 構造体定義](#23-構造体定義)
-         - [PatternCoord](#patterncoord)
-         - [PatternSize](#patternsize)
-         - [PatternView](#patternview)
-         - [PatternStep](#patternstep)
-         - [PatternIterator](#patterniterator)
-   - [3. ライブラリ機能仕様](#3-ライブラリ機能仕様)
-      - [3.1 基本表示機能](#31-基本表示機能)
-         - [概要](#概要)
-         - [3.1.1 printx](#311-printx)
-            - [シグネチャ](#シグネチャ)
-            - [機能説明](#機能説明)
-            - [引数仕様](#引数仕様)
-            - [戻り値仕様](#戻り値仕様)
-            - [使用例](#使用例)
-            - [実行例](#実行例)
-         - [3.1.2 printxs](#312-printxs)
-            - [シグネチャ](#シグネチャ-1)
-            - [機能説明](#機能説明-1)
-            - [引数仕様](#引数仕様-1)
-            - [戻り値仕様](#戻り値仕様-1)
-            - [使用例](#使用例-1)
-            - [実行例](#実行例-1)
-      - [3.2 パターン読み込み機能](#32-パターン読み込み機能)
-         - [概要](#概要-1)
-         - [3.2.1 load\_txt](#321-load_txt)
-            - [シグネチャ](#シグネチャ-2)
-            - [機能説明](#機能説明-2)
-            - [処理の流れ](#処理の流れ)
-            - [引数仕様](#引数仕様-2)
-            - [戻り値仕様](#戻り値仕様-2)
-            - [使用例](#使用例-2)
-         - [3.2.2 load\_txt\_to\_8x8](#322-load_txt_to_8x8)
-            - [シグネチャ](#シグネチャ-3)
-            - [機能説明](#機能説明-3)
-            - [引数仕様](#引数仕様-3)
-            - [戻り値仕様](#戻り値仕様-3)
-            - [使用例](#使用例-3)
-         - [3.2.3 free\_memory](#323-free_memory)
-            - [シグネチャ](#シグネチャ-4)
-            - [機能説明](#機能説明-4)
-            - [引数仕様](#引数仕様-4)
-            - [戻り値仕様](#戻り値仕様-4)
-            - [使用例](#使用例-4)
-      - [3.3 座標変換・サイズ計算機能](#33-座標変換サイズ計算機能)
-         - [概要](#概要-2)
-         - [3.3.1 pattern\_scaled\_size](#331-pattern_scaled_size)
-            - [シグネチャ](#シグネチャ-5)
-            - [機能説明](#機能説明-5)
-            - [計算アルゴリズム](#計算アルゴリズム)
-            - [引数仕様](#引数仕様-5)
-            - [戻り値仕様](#戻り値仕様-5)
-            - [使用例](#使用例-5)
-         - [3.3.2 resolve\_coord](#332-resolve_coord)
-            - [シグネチャ](#シグネチャ-6)
-            - [機能説明](#機能説明-6)
-            - [処理の流れ](#処理の流れ-1)
-            - [引数仕様](#引数仕様-6)
-            - [戻り値仕様](#戻り値仕様-6)
-            - [使用例](#使用例-6)
-      - [3.4 パターン走査機能](#34-パターン走査機能)
-         - [概要](#概要-3)
-         - [3.4.1 new\_iter](#341-new_iter)
-            - [シグネチャ](#シグネチャ-7)
-            - [機能説明](#機能説明-7)
-            - [引数仕様](#引数仕様-7)
-            - [戻り値仕様](#戻り値仕様-7)
-            - [使用例](#使用例-7)
-         - [3.4.2 pattern\_iterator\_next](#342-pattern_iterator_next)
-            - [シグネチャ](#シグネチャ-8)
-            - [機能説明](#機能説明-8)
-            - [処理の流れ](#処理の流れ-2)
-            - [引数仕様](#引数仕様-8)
-            - [戻り値仕様](#戻り値仕様-8)
-            - [使用例](#使用例-8)
-         - [3.4.3 pattern\_iterator\_next\_h](#343-pattern_iterator_next_h)
-            - [シグネチャ](#シグネチャ-9)
-            - [機能説明](#機能説明-9)
-            - [引数仕様](#引数仕様-9)
-            - [戻り値仕様](#戻り値仕様-9)
-            - [使用例](#使用例-9)
-      - [3.5 パターン描画制御機能](#35-パターン描画制御機能)
-         - [概要](#概要-4)
-         - [3.5.1 new\_pattern\_view](#351-new_pattern_view)
-            - [シグネチャ](#シグネチャ-10)
-            - [機能説明](#機能説明-10)
-            - [初期設定値](#初期設定値)
-            - [引数仕様](#引数仕様-10)
-            - [戻り値仕様](#戻り値仕様-10)
-            - [使用例](#使用例-10)
-         - [3.5.2 new\_pattern\_view\_doublescale](#352-new_pattern_view_doublescale)
-            - [シグネチャ](#シグネチャ-11)
-            - [機能説明](#機能説明-11)
-            - [引数仕様](#引数仕様-11)
-            - [戻り値仕様](#戻り値仕様-11)
-            - [使用例](#使用例-11)
-         - [3.5.3 print\_as\_pattern](#353-print_as_pattern)
-            - [シグネチャ](#シグネチャ-12)
-            - [機能説明](#機能説明-12)
-            - [引数仕様](#引数仕様-12)
-            - [戻り値仕様](#戻り値仕様-12)
-            - [使用例](#使用例-12)
-   - [4. 仕様変更点および設計履歴](#4-仕様変更点および設計履歴)
-      - [4.1 座標変換機能の変更](#41-座標変換機能の変更)
-      - [4.2 パターン走査機能の変更](#42-パターン走査機能の変更)
-      - [4.3 パターン描画制御機能の変更](#43-パターン描画制御機能の変更)
-      - [4.4 fontlib へのモジュール統合とリファクタリング](#44-fontlib-へのモジュール統合とリファクタリング)
+- [1. 概要と構成](#1-概要と構成)
+  - [1.1 概要](#11-概要)
+  - [1.2 機能構成と責務](#12-機能構成と責務)
+  - [1.3 コンパイルおよびライブラリ構築方法](#13-コンパイルおよびライブラリ構築方法)
+- [2. 共通データ構造および定数定義](#2-共通データ構造および定数定義)
+  - [2.1 定数定義](#21-定数定義)
+  - [2.2 列挙型定義](#22-列挙型定義)
+  - [2.3 構造体定義](#23-構造体定義)
+- [3. ライブラリ機能仕様](#3-ライブラリ機能仕様)
+  - [3.1 基本表示機能](#31-基本表示機能)
+    - [3.1.1 printx](#311-printx)
+    - [3.1.2 printxs](#312-printxs)
+  - [3.2 パターン読み込み機能](#32-パターン読み込み機能)
+    - [3.2.1 load_txt](#321-load_txt)
+    - [3.2.2 load_txt_to_8x8](#322-load_txt_to_8x8)
+    - [3.2.3 free_memory](#323-free_memory)
+  - [3.3 座標変換・サイズ計算機能](#33-座標変換サイズ計算機能)
+    - [3.3.1 pattern_scaled_size](#331-pattern_scaled_size)
+    - [3.3.2 resolve_coord](#332-resolve_coord)
+  - [3.4 パターン走査機能](#34-パターン走査機能)
+    - [3.4.1 new_iter](#341-new_iter)
+    - [3.4.2 pattern_iterator_next](#342-pattern_iterator_next)
+    - [3.4.3 pattern_iterator_next_h](#343-pattern_iterator_next_h)
+  - [3.5 パターン描画制御機能](#35-パターン描画制御機能)
+    - [3.5.1 new_pattern_view](#351-new_pattern_view)
+    - [3.5.2 new_pattern_view_doublescale](#352-new_pattern_view_doublescale)
+    - [3.5.3 print_as_pattern](#353-print_as_pattern)
+- [4. 仕様変更点および設計履歴](#4-仕様変更点および設計履歴)
+  - [4.1 座標変換機能の変更](#41-座標変換機能の変更)
+  - [4.2 パターン走査機能の変更](#42-パターン走査機能の変更)
+  - [4.3 パターン描画制御機能の変更](#43-パターン描画制御機能の変更)
+  - [4.4 fontlib へのモジュール統合とリファクタリング](#44-fontlib-へのモジュール統合とリファクタリング)
 
 ---
 
@@ -360,6 +272,26 @@ typedef struct {
 
 ## 3. ライブラリ機能仕様
 
+### 全提供関数一覧
+
+| 関数名 | 所属機能群 | 概要説明 |
+| --- | --- | --- |
+| `printx` | 基本表示 | フラグに応じて「`X`」またはスペースを1文字表示する |
+| `printxs` | 基本表示 | フラグに応じて指定された文字列，またはスペース1文字を表示する |
+| `load_txt` | パターン読み込み | テキストファイルから任意の高さ・幅のパターン配列を動的に確保して読み込む |
+| `load_txt_to_8x8` | パターン読み込み | `load_txt` を用いて8×8固定サイズの二次元配列ポインタとして読み込む |
+| `free_memory` | パターン読み込み | `load_txt` 系の関数で確保された動的メモリ領域を解放する |
+| `pattern_scaled_size` | 座標変換・サイズ計算 | 回転角およびスケール倍率を反映した出力全体の幅・高さを計算する |
+| `resolve_coord` | 座標変換・サイズ計算 | 出力画面上の座標 `(out_x, out_y)` から元パターン上の座標 `(src_x, src_y)` を算出する |
+| `new_iter` | パターン走査 | `PatternView` に基づいてイテレータの初期状態を構築する |
+| `pattern_iterator_next` | パターン走査 | 行優先（1文字ごとに全行を走査）で次の描画イベントを取得する |
+| `pattern_iterator_next_h` | パターン走査 | 水平優先（全文字の同一行を走査）で次の描画イベントを取得する |
+| `new_pattern_view` | パターン描画制御 | 標準設定（等倍，回転90°，出力文字 `"X"`）の `PatternView` を生成する |
+| `new_pattern_view_doublescale` | パターン描画制御 | 縦横2倍スケール設定の `PatternView` を生成する |
+| `print_as_pattern` | パターン描画制御 | `PatternView` の設定に基づいてイテレータを駆動し，パターンを標準出力に表示する |
+
+---
+
 ### 3.1 基本表示機能
 
 #### 概要
@@ -442,7 +374,7 @@ printxs(0, "ABC");  /* スペース1文字を表示（"ABC"は無視される）
 ##### 実行例
 
 ```text
-ABC
+ABC 
 ```
 
 ---
@@ -505,13 +437,16 @@ int load_txt(const char* filename, size_t h, size_t w, int** out, size_t* out_n)
 int *patterns;
 size_t n;
 
-if (load_txt("font_data01.txt", 8, 8, &patterns, &n) != 0) {
-    /* エラー処理 */
+if (load_txt("font_data01.txt", 8, 8, &patterns, &n) == 0) {
+    printf("n = %zu\n", n);
+    free_memory(patterns);
 }
+```
 
-/* patterns[c * 8 * 8 + r * 8 + col] で各セルにアクセス可能 */
+##### 実行例
 
-free_memory(patterns);
+```text
+n = 26
 ```
 
 #### 3.2.2 load_txt_to_8x8
@@ -548,14 +483,28 @@ int load_txt_to_8x8(const char filename[], int (**out)[8][8], size_t* out_n);
 int (*patterns)[8][8];
 size_t n;
 
-if (load_txt_to_8x8("font_data01.txt", &patterns, &n) != 0) {
-    /* エラー処理 */
+if (load_txt_to_8x8("font_data01.txt", &patterns, &n) == 0) {
+    printf("n = %zu\n", n);
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) printf("%d", patterns[0][y][x]);
+        putchar('\n');
+    }
+    free_memory(patterns);
 }
+```
 
-/* patterns[0] 〜 patterns[n-1] に各文字の8×8二次元配列が格納される */
-/* patterns[ch][y][x] で直接直感的にアクセス可能 */
+##### 実行例
 
-free_memory(patterns);
+```text
+n = 26
+00011000
+00100100
+01000010
+01000010
+01111110
+01000010
+01000010
+00000000
 ```
 
 #### 3.2.3 free_memory
@@ -584,8 +533,19 @@ void free_memory(void* arr);
 ##### 使用例
 
 ```c
-free_memory(patterns);  /* int (*)[8][8] でもキャスト不要 */
-free_memory(flat);      /* int * でも同様に解放可能 */
+int (*patterns)[8][8];
+size_t n;
+
+if (load_txt_to_8x8("font_data01.txt", &patterns, &n) == 0) {
+    free_memory(patterns);  /* int (*)[8][8] でもキャスト不要 */
+    printf("free_memory: success\n");
+}
+```
+
+##### 実行例
+
+```text
+free_memory: success
 ```
 
 ---
@@ -616,13 +576,13 @@ PatternSize pattern_scaled_size(const PatternView* view);
 ##### 計算アルゴリズム
 
 - **回転が 90度 または 270度 の場合**:
-   - 幅と高さの軸が入れ替わるため，元パターンの高さ `view->h` に対して横倍率 `view->scale_w` を乗じ，元パターンの幅 `view->w` に対して縦倍率 `view->scale_h` を乗じる．
-   - `size.width = view->h * view->scale_w`
-   - `size.height = view->w * view->scale_h`
+  - 幅と高さの軸が入れ替わるため，元パターンの高さ `view->h` に対して横倍率 `view->scale_w` を乗じ，元パターンの幅 `view->w` に対して縦倍率 `view->scale_h` を乗じる．
+  - `size.width = view->h * view->scale_w`
+  - `size.height = view->w * view->scale_h`
 - **回転が 0度 または 180度 の場合**:
-   - 元パターンの軸が維持されるため，そのまま各倍率を乗じる．
-   - `size.width = view->w * view->scale_w`
-   - `size.height = view->h * view->scale_h`
+  - 元パターンの軸が維持されるため，そのまま各倍率を乗じる．
+  - `size.width = view->w * view->scale_w`
+  - `size.height = view->h * view->scale_h`
 
 ##### 引数仕様
 
@@ -640,9 +600,16 @@ PatternSize pattern_scaled_size(const PatternView* view);
 ##### 使用例
 
 ```c
+int dummy[1][8][8] = {{{0}}};
+PatternView view = new_pattern_view(1, dummy);
 PatternSize size = pattern_scaled_size(&view);
-size_t out_w = size.width;
-size_t out_h = size.height;
+printf("size = (w=%zu, h=%zu)\n", size.width, size.height);
+```
+
+##### 実行例
+
+```text
+size = (w=8, h=8)
 ```
 
 #### 3.3.2 resolve_coord
@@ -694,8 +661,16 @@ PatternCoord resolve_coord(const PatternView* view, size_t out_x, size_t out_y);
 ##### 使用例
 
 ```c
-PatternCoord src = resolve_coord(&view, out_x, out_y);
-/* patterns[ch][src.y][src.x] にアクセスしてセルの0/1を取得する */
+int dummy[1][8][8] = {{{0}}};
+PatternView view = new_pattern_view(1, dummy);
+PatternCoord src = resolve_coord(&view, 0, 0);
+printf("resolve(0,0) -> (%zu,%zu)\n", src.x, src.y);
+```
+
+##### 実行例
+
+```text
+resolve(0,0) -> (0,7)
 ```
 
 ---
@@ -710,7 +685,7 @@ PatternCoord src = resolve_coord(&view, out_x, out_y);
 | --- | --- |
 | `new_iter` | `PatternView` に基づいてイテレータの初期状態を構築する |
 | `pattern_iterator_next` | 行優先（1文字ごとに全行を走査）で次の描画イベントを取得する |
-| `pattern_iterator_next_h` | 水平優先（全文字の同じ行を水平方向に走査）で次の描画イベントを取得する |
+| `pattern_iterator_next_h` | 水平優先（全文字の同一行を走査）で次の描画イベントを取得する |
 
 #### 3.4.1 new_iter
 
@@ -738,8 +713,17 @@ PatternIterator new_iter(const PatternView* view);
 ##### 使用例
 
 ```c
+int dummy[1][8][8] = {{{0}}};
+PatternView view = new_pattern_view(1, dummy);
 PatternIterator it = new_iter(&view);
-PatternStep step;
+printf("out_w=%zu, out_h=%zu, x=%zu, y=%zu, ch=%zu\n",
+       it.out_w, it.out_h, it.x, it.y, it.ch);
+```
+
+##### 実行例
+
+```text
+out_w=8, out_h=8, x=0, y=0, ch=0
 ```
 
 #### 3.4.2 pattern_iterator_next
@@ -786,16 +770,20 @@ PatternEvent pattern_iterator_next(PatternIterator* it, PatternStep* step);
 ##### 使用例
 
 ```c
+int dummy[1][8][8] = {{{0}}};
+PatternView view = new_pattern_view(1, dummy);
 PatternIterator it = new_iter(&view);
 PatternStep step;
 
-while (pattern_iterator_next(&it, &step) != PATTERN_EVENT_END) {
-    if (step.kind == PATTERN_EVENT_CELL) {
-        /* step.ch, step.src_x, step.src_y を使ってセル描画 */
-    } else if (step.kind == PATTERN_EVENT_NEWLINE) {
-        putchar('\n');
-    }
+if (pattern_iterator_next(&it, &step) == PATTERN_EVENT_CELL) {
+    printf("CELL: ch=%zu, src=(%zu,%zu)\n", step.ch, step.src_x, step.src_y);
 }
+```
+
+##### 実行例
+
+```text
+CELL: ch=0, src=(0,7)
 ```
 
 #### 3.4.3 pattern_iterator_next_h
@@ -824,16 +812,20 @@ PatternEvent pattern_iterator_next_h(PatternIterator* it, PatternStep* step);
 ##### 使用例
 
 ```c
+int dummy[2][8][8] = {{{0}}};
+PatternView view = new_pattern_view(2, dummy);
 PatternIterator it = new_iter(&view);
 PatternStep step;
 
-while (pattern_iterator_next_h(&it, &step) != PATTERN_EVENT_END) {
-    if (step.kind == PATTERN_EVENT_CELL) {
-        /* 水平方向に文字を並べて描画する場合に使用 */
-    } else if (step.kind == PATTERN_EVENT_NEWLINE) {
-        putchar('\n');
-    }
+if (pattern_iterator_next_h(&it, &step) == PATTERN_EVENT_CELL) {
+    printf("CELL_H: ch=%zu, src=(%zu,%zu)\n", step.ch, step.src_x, step.src_y);
 }
+```
+
+##### 実行例
+
+```text
+CELL_H: ch=0, src=(0,7)
 ```
 
 ---
@@ -888,11 +880,16 @@ PatternView new_pattern_view(size_t count, void* pattern);
 ##### 使用例
 
 ```c
-int (*patterns)[8][8];
-/* load_txt_to_8x8等でパターンを取得 */
+int dummy[1][8][8] = {{{0}}};
+PatternView view = new_pattern_view(1, dummy);
+printf("normal: h=%zu w=%zu scale_w=%u scale_h=%u rotation=%d\n",
+       view.h, view.w, view.scale_w, view.scale_h, view.rotation);
+```
 
-PatternView view = new_pattern_view(n, patterns);
-print_as_pattern(&view);
+##### 実行例
+
+```text
+normal: h=8 w=8 scale_w=1 scale_h=1 rotation=1
 ```
 
 #### 3.5.2 new_pattern_view_doublescale
@@ -922,8 +919,16 @@ PatternView new_pattern_view_doublescale(size_t count, void* pattern);
 ##### 使用例
 
 ```c
-PatternView view2x = new_pattern_view_doublescale(n, patterns);
-print_as_pattern(&view2x);
+int dummy[1][8][8] = {{{0}}};
+PatternView view2x = new_pattern_view_doublescale(1, dummy);
+printf("double: h=%zu w=%zu scale_w=%u scale_h=%u rotation=%d\n",
+       view2x.h, view2x.w, view2x.scale_w, view2x.scale_h, view2x.rotation);
+```
+
+##### 実行例
+
+```text
+double: h=8 w=8 scale_w=2 scale_h=2 rotation=1
 ```
 
 #### 3.5.3 print_as_pattern
@@ -952,14 +957,29 @@ void print_as_pattern(const PatternView* view);
 ##### 使用例
 
 ```c
-int (*patterns)[8][8];
-size_t n;
+int patterns[1][8][8] = {{{0, 0, 1, 1, 0, 0, 0, 0},
+                          {0, 0, 1, 1, 0, 0, 0, 0},
+                          {0, 0, 1, 1, 0, 0, 0, 0},
+                          {1, 1, 1, 1, 1, 1, 0, 0},
+                          {1, 1, 0, 0, 1, 1, 0, 0},
+                          {1, 1, 0, 0, 1, 1, 0, 0},
+                          {1, 1, 0, 0, 1, 1, 0, 0},
+                          {0, 0, 0, 0, 0, 0, 0, 0}}};
+PatternView view = new_pattern_view(1, patterns);
+print_as_pattern(&view);
+```
 
-if (load_txt_to_8x8("font_data02.txt", &patterns, &n) == 0) {
-    PatternView view = new_pattern_view_doublescale(n, patterns);
-    print_as_pattern(&view);
-    free_memory(patterns);
-}
+##### 実行例
+
+```text
+ XXXX   
+ XXXX   
+    XXXX
+    XXXX
+ XXXX   
+ XXXX   
+        
+        
 ```
 
 ---
