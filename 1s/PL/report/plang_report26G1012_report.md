@@ -8,26 +8,61 @@
 
 ## 目次
 
-- [1. 報告概要](#1-報告概要)
-- [2. fontlib 機能別検証結果](#2-fontlib-機能別検証結果)
-  - [2.1 基本表示機能の検証 (test_fontlib.c)](#21-基本表示機能の検証-test_fontlibc)
-    - [2.1.1 printx の実行結果と考察](#211-printx-の実行結果と考察)
-    - [2.1.2 printxs の実行結果と考察](#212-printxs-の実行結果と考察)
-  - [2.2 パターン読み込み機能の検証 (test_get_pattern.c)](#22-パターン読み込み機能の検証-test_get_patternc)
-    - [2.2.1 load_txt_to_8x8 の実行結果と考察](#221-load_txt_to_8x8-の実行結果と考察)
-    - [2.2.2 free_memory の実行結果と考察](#222-free_memory-の実行結果と考察)
-  - [2.3 座標変換・サイズ計算機能の検証 (test_get_coord.c)](#23-座標変換サイズ計算機能の検証-test_get_coordc)
-    - [2.3.1 pattern_scaled_size の実行結果と考察](#231-pattern_scaled_size-の実行結果と考察)
-    - [2.3.2 resolve_coord の実行結果と考察](#232-resolve_coord-の実行結果と考察)
-  - [2.4 パターン走査機能の検証 (test_iterator.c)](#24-パターン走査機能の検証-test_iteratorc)
-    - [2.4.1 pattern_iterator_next (行優先走査) の実行結果と考察](#241-pattern_iterator_next-行優先走査-の実行結果と考察)
-    - [2.4.2 pattern_iterator_next_h (水平優先走査) の実行結果と考察](#242-pattern_iterator_next_h-水平優先走査-の実行結果と考察)
-  - [2.5 パターン描画制御機能の検証 (test_print_pattern.c)](#25-パターン描画制御機能の検証-test_print_patternc)
-    - [2.5.1 new_pattern_view / new_pattern_view_doublescale の実行結果と考察](#251-new_pattern_view--new_pattern_view_doublescale-の実行結果と考察)
-    - [2.5.2 print_as_pattern の実行結果と考察](#252-print_as_pattern-の実行結果と考察)
-- [3. 総合テストプログラム (main.c) の検証結果](#3-総合テストプログラム-mainc-の検証結果)
-  - [3.1 パイプライン統合動作の実行結果と考察](#31-パイプライン統合動作の実行結果と考察)
-- [4. 総合考察](#4-総合考察)
+- [パターン印刷プログラム結果報告書](#パターン印刷プログラム結果報告書)
+   - [目次](#目次)
+   - [1. 報告概要](#1-報告概要)
+   - [2. fontlib 機能別検証結果](#2-fontlib-機能別検証結果)
+      - [2.1 基本表示機能の検証 (test\_fontlib.c)](#21-基本表示機能の検証-test_fontlibc)
+         - [2.1.1 printx の実行結果と考察](#211-printx-の実行結果と考察)
+            - [確認する機能](#確認する機能)
+            - [実行結果](#実行結果)
+            - [考察](#考察)
+         - [2.1.2 printxs の実行結果と考察](#212-printxs-の実行結果と考察)
+            - [確認する機能](#確認する機能-1)
+            - [実行結果](#実行結果-1)
+            - [考察](#考察-1)
+      - [2.2 パターン読み込み機能の検証 (test\_get\_pattern.c)](#22-パターン読み込み機能の検証-test_get_patternc)
+         - [2.2.1 load\_txt\_to\_8x8 の実行結果と考察](#221-load_txt_to_8x8-の実行結果と考察)
+            - [確認する機能](#確認する機能-2)
+            - [実行結果](#実行結果-2)
+            - [考察](#考察-2)
+         - [2.2.2 free\_memory の実行結果と考察](#222-free_memory-の実行結果と考察)
+            - [確認する機能](#確認する機能-3)
+            - [実行結果](#実行結果-3)
+            - [考察](#考察-3)
+      - [2.3 座標変換・サイズ計算機能の検証 (test\_get\_coord.c)](#23-座標変換サイズ計算機能の検証-test_get_coordc)
+         - [2.3.1 pattern\_scaled\_size の実行結果と考察](#231-pattern_scaled_size-の実行結果と考察)
+            - [確認する機能](#確認する機能-4)
+            - [実行結果](#実行結果-4)
+            - [考察](#考察-4)
+         - [2.3.2 resolve\_coord の実行結果と考察](#232-resolve_coord-の実行結果と考察)
+            - [確認する機能](#確認する機能-5)
+            - [実行結果](#実行結果-5)
+            - [考察](#考察-5)
+      - [2.4 パターン走査機能の検証 (test\_iterator.c)](#24-パターン走査機能の検証-test_iteratorc)
+         - [2.4.1 pattern\_iterator\_next (行優先走査) の実行結果と考察](#241-pattern_iterator_next-行優先走査-の実行結果と考察)
+            - [確認する機能](#確認する機能-6)
+            - [実行結果（抜粋）](#実行結果抜粋)
+            - [考察](#考察-6)
+         - [2.4.2 pattern\_iterator\_next\_h (水平優先走査) の実行結果と考察](#242-pattern_iterator_next_h-水平優先走査-の実行結果と考察)
+            - [確認する機能](#確認する機能-7)
+            - [実行結果（抜粋）](#実行結果抜粋-1)
+            - [考察](#考察-7)
+      - [2.5 パターン描画制御機能の検証 (test\_print\_pattern.c)](#25-パターン描画制御機能の検証-test_print_patternc)
+         - [2.5.1 new\_pattern\_view / new\_pattern\_view\_doublescale の実行結果と考察](#251-new_pattern_view--new_pattern_view_doublescale-の実行結果と考察)
+            - [確認する機能](#確認する機能-8)
+            - [実行結果](#実行結果-6)
+            - [考察](#考察-8)
+         - [2.5.2 print\_as\_pattern の実行結果と考察](#252-print_as_pattern-の実行結果と考察)
+            - [確認する機能](#確認する機能-9)
+            - [実行結果](#実行結果-7)
+            - [考察](#考察-9)
+   - [3. 総合テストプログラム (main.c) の検証結果](#3-総合テストプログラム-mainc-の検証結果)
+      - [3.1 パイプライン統合動作の実行結果と考察](#31-パイプライン統合動作の実行結果と考察)
+         - [確認する機能](#確認する機能-10)
+         - [実行結果（抜粋）](#実行結果抜粋-2)
+         - [考察](#考察-10)
+   - [4. 総合考察](#4-総合考察)
 
 ---
 
@@ -46,8 +81,8 @@
 基本表示機能（`printx`, `printxs`）の動作確認は，テストプログラム `test_fontlib.c` を用いて実施した．
 
 ```sh
-$ clang test_fontlib.c fontlib.c -o test_fontlib
-$ ./test_fontlib
+clang test_fontlib.c fontlib.c -o test_fontlib
+./test_fontlib
 ```
 
 #### 2.1.1 printx の実行結果と考察
@@ -76,7 +111,7 @@ X X
 
 ```text
 ABC
- 
+
 ```
 
 ##### 考察
@@ -90,8 +125,8 @@ ABC
 パターン読み込み機能（`load_txt_to_8x8`, `free_memory`）の動作確認は，テストプログラム `test_get_pattern.c` を用いて実施した．
 
 ```sh
-$ clang test_get_pattern.c fontlib.c -o test_get_pattern
-$ ./test_get_pattern
+clang test_get_pattern.c fontlib.c -o test_get_pattern
+./test_get_pattern
 ```
 
 #### 2.2.1 load_txt_to_8x8 の実行結果と考察
@@ -141,8 +176,8 @@ free_memory: success
 座標変換および出力サイズ計算機能（`pattern_scaled_size`, `resolve_coord`）の動作確認は，テストプログラム `test_get_coord.c` を用いて実施した．
 
 ```sh
-$ clang test_get_coord.c fontlib.c -o test_get_coord
-$ ./test_get_coord
+clang test_get_coord.c fontlib.c -o test_get_coord
+./test_get_coord
 ```
 
 #### 2.3.1 pattern_scaled_size の実行結果と考察
@@ -202,8 +237,8 @@ rotate90_scale_w3_h2:  resolve(0,0) -> (0,3)
 パターン走査機能（`new_iter`, `pattern_iterator_next`, `pattern_iterator_next_h`）の動作確認は，テストプログラム `test_iterator.c` を用いて実施した．
 
 ```sh
-$ clang test_iterator.c fontlib.c -o test_iterator
-$ ./test_iterator
+clang test_iterator.c fontlib.c -o test_iterator
+./test_iterator
 ```
 
 #### 2.4.1 pattern_iterator_next (行優先走査) の実行結果と考察
@@ -286,8 +321,8 @@ END
 パターン描画制御機能（`new_pattern_view`, `new_pattern_view_doublescale`, `print_as_pattern`）の動作確認は，テストプログラム `test_print_pattern.c` を用いて実施した．
 
 ```sh
-$ clang test_print_pattern.c fontlib.c -o test_print_pattern
-$ ./test_print_pattern
+clang test_print_pattern.c fontlib.c -o test_print_pattern
+./test_print_pattern
 ```
 
 #### 2.5.1 new_pattern_view / new_pattern_view_doublescale の実行結果と考察
@@ -319,31 +354,31 @@ double: h=8 w=8 scale_w=2 scale_h=2 rotation=1
 
 ```text
 normal:
- XXXX   
- XXXX   
+ XXXX
+ XXXX
     XXXX
     XXXX
- XXXX   
- XXXX   
-        
-        
+ XXXX
+ XXXX
+
+
 double:
-  XXXXXXXX      
-  XXXXXXXX      
-  XXXXXXXX      
-  XXXXXXXX      
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
         XXXXXXXX
         XXXXXXXX
         XXXXXXXX
         XXXXXXXX
-  XXXXXXXX      
-  XXXXXXXX      
-  XXXXXXXX      
-  XXXXXXXX      
-                
-                
-                
-                
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+  XXXXXXXX
+
+
+
+
 ```
 
 ##### 考察
@@ -361,8 +396,8 @@ double:
 フォントデータファイル読み込みから，パターン配列生成，拡大ビュー構築，画面への大きな文字パターン描画，およびメモリ解放までのパイプライン処理を一連で統合検証した．
 
 ```sh
-$ clang main.c fontlib.c -o main
-$ ./main
+clang main.c fontlib.c -o main
+./main
 ```
 
 #### 確認する機能
@@ -372,22 +407,22 @@ $ ./main
 #### 実行結果（抜粋）
 
 ```text
-  XX            
-  XX            
-  XXXXXXXXXXXX  
-  XXXXXXXXXXXX  
+  XX
+  XX
+  XXXXXXXXXXXX
+  XXXXXXXXXXXX
   XX    XX    XX
   XX    XX    XX
         XX    XX
         XX    XX
   XX    XX    XX
   XX    XX    XX
-  XXXXXXXXXXXX  
-  XXXXXXXXXXXX  
-  XX            
-  XX            
-                
-                
+  XXXXXXXXXXXX
+  XXXXXXXXXXXX
+  XX
+  XX
+
+
   XX          XX
   XX          XX
   XXXXXXXXXXXXXX
@@ -398,8 +433,8 @@ $ ./main
   XX    XX    XX
   XX    XX    XX
   XX    XX    XX
-    XXXX  XXXX  
-    XXXX  XXXX  
+    XXXX  XXXX
+    XXXX  XXXX
 ...
 ```
 
@@ -411,8 +446,13 @@ $ ./main
 
 ## 4. 総合考察
 
-本検証を通じて，以下の設計目標がすべて満たされていることが確認された．
+本検証を通じて，以下の設計目標および仕様改善の妥当性がすべて実証された．
 
-1. **ライブラリ設計とテストプログラムの分離**: パターン表示に関するすべての基盤機能を `fontlib` に集約し，テストプログラム（機能別の `test_*.c` および統合検証用の `main.c`）をフラットに配置したことで，シンプルかつ堅牢なファイル構成を実現した．
-2. **高い検証性と制約の遵守**: 各機能群に対応するテストプログラムを独立させ，ソースコード内でのマクロ定義（`#define`）やグローバル変数を一切使用しないクリーンな実装によって，高い可読性と再現性をもった検証が行えることを実証した．
-3. **ビルドおよび運用の単純化**: サンプルコードを同一階層に展開したことで，相対パス参照やインクルードパス指定が不要となり，極めて容易にビルド・検証できる構成となった．
+1. **第1回提出 (first-submit) からの仕様改善の妥当性**:
+   初期提出（Gitタグ: `first-submit`）からの主要な設計変更である「出力寸法の一括取得化（`pattern_scaled_size` の導入）」「デフォルト回転角度の `ROTATE_90` 化」「単一ライブラリ `fontlib` への集約」について，それぞれの変更が計算処理の重複排除，要件に合致した正立表示のネイティブサポート，およびビルド依存関係の単純化に大きく寄与していることが，実際のテスト実行結果を通じて実証された．
+2. **ライブラリ設計とテストプログラムの分離**:
+   パターン表示に関するすべての基盤機能を `fontlib` に集約し，テストプログラム（機能別の `test_*.c` および統合検証用の `main.c`）をフラットに配置したことで，シンプルかつ堅牢なファイル構成を実現した．
+3. **高い検証性と制約の遵守**:
+   各機能群に対応するテストプログラムを独立させ，ソースコード内でのマクロ定義（`#define`）やグローバル変数を一切使用しないクリーンな実装によって，高い可読性と再現性をもった検証が行えることを実証した．
+4. **ビルドおよび運用の単純化**:
+   サンプルコードを同一階層に展開したことで，相対パス参照やインクルードパス指定が不要となり，極めて容易にビルド・検証できる構成となった．
