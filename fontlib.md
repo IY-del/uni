@@ -10,6 +10,9 @@
    - [1.1. 概要](#11-概要)
    - [1.2. 機能構成と責務](#12-機能構成と責務)
    - [1.3. コンパイル方法](#13-コンパイル方法)
+      - [直接コンパイル](#直接コンパイル)
+      - [静的ライブラリの構築とリンク](#静的ライブラリの構築とリンク)
+      - [動的ライブラリの構築とリンク](#動的ライブラリの構築とリンク)
 - [2. 共通データ構造および定数定義](#2-共通データ構造および定数定義)
    - [2.1. 定数定義](#21-定数定義)
    - [2.2. 列挙型定義](#22-列挙型定義)
@@ -51,19 +54,17 @@
 
 本仕様書は，テキスト形式のフォントデータファイル（'0' および '1' のビット列）を読み込み，任意の拡大倍率（スケール）や回転方向（0°, 90°, 180°, 270°）を適用したうえで，端末画面（標準出力）上に大きな文字パターンとして描画するC言語ライブラリ **`fontlib`**（対象ファイル: `fontlib.c`，ヘッダー: `fontlib.h`）の仕様を規定する．
 
-本ライブラリは，マクロ定義（`#define`）やグローバル変数を一切排除し，関数引数・戻り値および構造体カプセル化による明確なデータ受け渡しを徹底している．また，ファイル読み込みにおける動的メモリ再配置（`realloc`）とインプレース終端ゼロクリアによる省メモリ・高速処理，およびすべての公開・内部関数における入力値バリデーション（NULLポインタ検査，ゼロ除算防止ガード）を備えた堅牢な設計となっている．
-
 ### 1.2. 機能構成と責務
 
 `fontlib` は，責務ごとに以下の5つの機能群に分類されて実装されている．
 
-| 機能群 | 役割・責務 | 主な提供関数 |
-| --- | --- | --- |
-| **基本表示機能** | 1セルの文字描画（`X` またはスペース，任意文字列）を行う基本出力機能 | `printx`, `printxs` |
-| **パターン読み込み機能** | テキストファイルから0/1列を抽出し，動的配列としてパターンを確保・解放する機能 | `load_txt`, `load_txt_to_8x8`, `free_memory` |
-| **座標変換・サイズ計算機能** | 回転角度および拡大倍率に基づき，出力座標系から元パターン座標系への逆写像と出力寸法計算を行う機能 | `rotate_coord`, `pattern_scaled_size`, `resolve_coord` |
-| **パターン走査機能** | 出力画面上の行優先または水平優先の走査状態を管理し，描画イベントを生成するイテレータ機能 | `new_iter`, `pattern_iterator_next`, `pattern_iterator_next_h` |
-| **パターン描画制御機能** | パターン描画条件（サイズ，スケール，回転，文字種）を保持し，イテレータを用いて描画を実行する機能 | `new_pattern_view`, `new_pattern_view_doublescale`, `print_as_pattern` |
+| 機能群                       | 役割・責務                                                                                       | 主な提供関数                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| **基本表示機能**             | 1セルの文字描画（`X` またはスペース，任意文字列）を行う基本出力機能                              | `printx`, `printxs`                                                    |
+| **パターン読み込み機能**     | テキストファイルから0/1列を抽出し，動的配列としてパターンを確保・解放する機能                    | `load_txt`, `load_txt_to_8x8`, `free_memory`                           |
+| **座標変換・サイズ計算機能** | 回転角度および拡大倍率に基づき，出力座標系から元パターン座標系への逆写像と出力寸法計算を行う機能 | `rotate_coord`, `pattern_scaled_size`, `resolve_coord`                 |
+| **パターン走査機能**         | 出力画面上の行優先または水平優先の走査状態を管理し，描画イベントを生成するイテレータ機能         | `new_iter`, `pattern_iterator_next`, `pattern_iterator_next_h`         |
+| **パターン描画制御機能**     | パターン描画条件（サイズ，スケール，回転，文字種）を保持し，イテレータを用いて描画を実行する機能 | `new_pattern_view`, `new_pattern_view_doublescale`, `print_as_pattern` |
 
 ### 1.3. コンパイル方法
 
@@ -91,12 +92,12 @@
 
 ```c\nenum {\n  PATTERN_DEFAULT_H = 8,\n  PATTERN_DEFAULT_W = 8,\n  PATTERN_SCALE_NORMAL = 1,\n  PATTERN_SCALE_DOUBLE = 2\n};\n```
 
-| 定数名 | 値 | 意味 |
-| --- | --- | --- |
-| `PATTERN_DEFAULT_H` | 8 | 1文字パターンの標準高さ（行数） |
-| `PATTERN_DEFAULT_W` | 8 | 1文字パターンの標準幅（列数） |
-| `PATTERN_SCALE_NORMAL` | 1 | 等倍表示（標準スケール倍率） |
-| `PATTERN_SCALE_DOUBLE` | 2 | 2倍拡大表示（縦横2倍スケール倍率） |
+| 定数名                 | 値  | 意味                               |
+| ---------------------- | --- | ---------------------------------- |
+| `PATTERN_DEFAULT_H`    | 8   | 1文字パターンの標準高さ（行数）    |
+| `PATTERN_DEFAULT_W`    | 8   | 1文字パターンの標準幅（列数）      |
+| `PATTERN_SCALE_NORMAL` | 1   | 等倍表示（標準スケール倍率）       |
+| `PATTERN_SCALE_DOUBLE` | 2   | 2倍拡大表示（縦横2倍スケール倍率） |
 
 ### 2.2. 列挙型定義
 
@@ -106,12 +107,12 @@
 
 ```c\ntypedef enum {\n  ROTATE_0,\n  ROTATE_90,\n  ROTATE_180,\n  ROTATE_270\n} PatternRotation;\n```
 
-| 識別子 | 値 | 説明 |
-| --- | --- | --- |
-| `ROTATE_0` | 0 | 回転なし（正立） |
-| `ROTATE_90` | 1 | 時計回りに90度回転 |
-| `ROTATE_180` | 2 | 180度回転（上下左右反転） |
-| `ROTATE_270` | 3 | 時計回りに270度（反時計回りに90度）回転 |
+| 識別子       | 値  | 説明                                    |
+| ------------ | --- | --------------------------------------- |
+| `ROTATE_0`   | 0   | 回転なし（正立）                        |
+| `ROTATE_90`  | 1   | 時計回りに90度回転                      |
+| `ROTATE_180` | 2   | 180度回転（上下左右反転）               |
+| `ROTATE_270` | 3   | 時計回りに270度（反時計回りに90度）回転 |
 
 #### PatternEvent
 
@@ -119,11 +120,11 @@
 
 ```c\ntypedef enum {\n  PATTERN_EVENT_END,\n  PATTERN_EVENT_CELL,\n  PATTERN_EVENT_NEWLINE\n} PatternEvent;\n```
 
-| 識別子 | 値 | 説明 |
-| --- | --- | --- |
-| `PATTERN_EVENT_END` | 0 | 全文字・全領域の走査完了（終了） |
-| `PATTERN_EVENT_CELL` | 1 | 描画対象のセルへの到達（セル描画イベント） |
-| `PATTERN_EVENT_NEWLINE` | 2 | 行末への到達（改行出力イベント） |
+| 識別子                  | 値  | 説明                                       |
+| ----------------------- | --- | ------------------------------------------ |
+| `PATTERN_EVENT_END`     | 0   | 全文字・全領域の走査完了（終了）           |
+| `PATTERN_EVENT_CELL`    | 1   | 描画対象のセルへの到達（セル描画イベント） |
+| `PATTERN_EVENT_NEWLINE` | 2   | 行末への到達（改行出力イベント）           |
 
 ### 2.3. 構造体定義
 
@@ -133,10 +134,10 @@
 
 ```c\ntypedef struct {\n  size_t x;\n  size_t y;\n} PatternCoord;\n```
 
-| メンバ名 | 型 | 意味 |
-| --- | --- | --- |
-| `x` | `size_t` | 元パターン上の水平インデックス（列番号: 0 〜 w-1） |
-| `y` | `size_t` | 元パターン上の垂直インデックス（行番号: 0 〜 h-1） |
+| メンバ名 | 型       | 意味                                               |
+| -------- | -------- | -------------------------------------------------- |
+| `x`      | `size_t` | 元パターン上の水平インデックス（列番号: 0 〜 w-1） |
+| `y`      | `size_t` | 元パターン上の垂直インデックス（行番号: 0 〜 h-1） |
 
 #### PatternSize
 
@@ -144,10 +145,10 @@
 
 ```c\ntypedef struct {\n  size_t width;\n  size_t height;\n} PatternSize;\n```
 
-| メンバ名 | 型 | 意味 |
-| --- | --- | --- |
-| `width` | `size_t` | 画面出力時の全体の横幅（セル数） |
-| `height` | `size_t` | 画面出力時の全体の縦幅（行数） |
+| メンバ名 | 型       | 意味                             |
+| -------- | -------- | -------------------------------- |
+| `width`  | `size_t` | 画面出力時の全体の横幅（セル数） |
+| `height` | `size_t` | 画面出力時の全体の縦幅（行数）   |
 
 #### PatternView
 
@@ -155,16 +156,16 @@
 
 ```c\ntypedef struct {\n  size_t count;\n  size_t h;\n  size_t w;\n  void* pattern;\n  const char* string;\n  unsigned scale_w;\n  unsigned scale_h;\n  PatternRotation rotation;\n} PatternView;\n```
 
-| メンバ名 | 型 | 意味 |
-| --- | --- | --- |
-| `count` | `size_t` | 格納されている文字パターン数 |
-| `h` | `size_t` | 元パターン1文字あたりの高さ（標準: 8） |
-| `w` | `size_t` | 元パターン1文字あたりの幅（標準: 8） |
-| `pattern` | `void*` | パターンデータ配列への汎用ポインタ（通常は `int (*)[h][w]` 相当） |
-| `string` | `const char*` | セル値が1のときに描画する文字列（標準: `\"X\"`） |
-| `scale_w` | `unsigned` | 水平方向の拡大倍率（1以上の整数） |
-| `scale_h` | `unsigned` | 垂直方向の拡大倍率（1以上の整数） |
-| `rotation` | `PatternRotation` | 適用する回転角度 |
+| メンバ名   | 型                | 意味                                                              |
+| ---------- | ----------------- | ----------------------------------------------------------------- |
+| `count`    | `size_t`          | 格納されている文字パターン数                                      |
+| `h`        | `size_t`          | 元パターン1文字あたりの高さ（標準: 8）                            |
+| `w`        | `size_t`          | 元パターン1文字あたりの幅（標準: 8）                              |
+| `pattern`  | `void*`           | パターンデータ配列への汎用ポインタ（通常は `int (*)[h][w]` 相当） |
+| `string`   | `const char*`     | セル値が1のときに描画する文字列（標準: `\"X\"`）                  |
+| `scale_w`  | `unsigned`        | 水平方向の拡大倍率（1以上の整数）                                 |
+| `scale_h`  | `unsigned`        | 垂直方向の拡大倍率（1以上の整数）                                 |
+| `rotation` | `PatternRotation` | 適用する回転角度                                                  |
 
 #### PatternStep
 
@@ -172,12 +173,12 @@
 
 ```c\ntypedef struct {\n  size_t ch;\n  size_t src_x;\n  size_t src_y;\n  PatternEvent kind;\n} PatternStep;\n```
 
-| メンバ名 | 型 | 意味 |
-| --- | --- | --- |
-| `ch` | `size_t` | 現在走査中の文字インデックス（0 〜 count-1） |
-| `src_x` | `size_t` | 参照すべき元パターン上のX座標 |
-| `src_y` | `size_t` | 参照すべき元パターン上のY座標 |
-| `kind` | `PatternEvent` | 発生したイベント（CELL / NEWLINE / END） |
+| メンバ名 | 型             | 意味                                         |
+| -------- | -------------- | -------------------------------------------- |
+| `ch`     | `size_t`       | 現在走査中の文字インデックス（0 〜 count-1） |
+| `src_x`  | `size_t`       | 参照すべき元パターン上のX座標                |
+| `src_y`  | `size_t`       | 参照すべき元パターン上のY座標                |
+| `kind`   | `PatternEvent` | 発生したイベント（CELL / NEWLINE / END）     |
 
 #### PatternIterator
 
@@ -185,14 +186,14 @@
 
 ```c\ntypedef struct {\n  const PatternView* view;\n  size_t ch;\n  size_t out_w;\n  size_t out_h;\n  size_t x;\n  size_t y;\n} PatternIterator;\n```
 
-| メンバ名 | 型 | 意味 |
-| --- | --- | --- |
-| `view` | `const PatternView*` | 走査対象の描画設定ビューへのポインタ |
-| `ch` | `size_t` | 現在処理中の文字インデックス |
-| `out_w` | `size_t` | 1文字あたりの出力横幅（`pattern_scaled_size` より算出） |
-| `out_h` | `size_t` | 1文字あたりの出力縦幅（`pattern_scaled_size` より算出） |
-| `x` | `size_t` | 1文字内の現在走査中X位置（0 〜 out_w-1） |
-| `y` | `size_t` | 1文字内の現在走査中Y位置（0 〜 out_h-1） |
+| メンバ名 | 型                   | 意味                                                    |
+| -------- | -------------------- | ------------------------------------------------------- |
+| `view`   | `const PatternView*` | 走査対象の描画設定ビューへのポインタ                    |
+| `ch`     | `size_t`             | 現在処理中の文字インデックス                            |
+| `out_w`  | `size_t`             | 1文字あたりの出力横幅（`pattern_scaled_size` より算出） |
+| `out_h`  | `size_t`             | 1文字あたりの出力縦幅（`pattern_scaled_size` より算出） |
+| `x`      | `size_t`             | 1文字内の現在走査中X位置（0 〜 out_w-1）                |
+| `y`      | `size_t`             | 1文字内の現在走査中Y位置（0 〜 out_h-1）                |
 
 ---
 
@@ -208,11 +209,11 @@
 - **戻り値**: なし (`void`)
 - **最低限の使用例**:
 
-   ```c\n  printx(1);\n  printx(0);\n  printx(2);\n   ```
+   ```c\n  printx(1);\n  printx(0);\n  printx(2);\n```
 
 - **上記の実行例**:
 
-   ```text\n  X X\n   ```
+   ```text\n  X X\n```
 
 #### printxs
 
@@ -223,11 +224,11 @@
 - **戻り値**: なし (`void`)
 - **最低限の使用例**:
 
-   ```c\n  printxs(1, \"ABC\");\n  printxs(0, \"ABC\");\n   ```
+   ```c\n  printxs(1, \"ABC\");\n  printxs(0, \"ABC\");\n```
 
 - **上記の実行例**:
 
-   ```text\n  ABC \n   ```
+   ```text\n  ABC \n```
 
 ---
 
@@ -245,11 +246,11 @@
 - **戻り値**: `int`（正常終了時は `0`，引数不正・ファイルオープン失敗時は `-1`，メモリ確保失敗時は `-2`）
 - **最低限の使用例**:
 
-   ```c\n  int* arr = NULL;\n  size_t n = 0;\n  if (load_txt(\"font_data01.txt\", 8, 8, &arr, &n) == 0) {\n    printf(\"n = %zu\\n\", n);\n    free_memory(arr);\n  }\n   ```
+   ```c\n  int* arr = NULL;\n  size_t n = 0;\n  if (load_txt(\"font_data01.txt\", 8, 8, &arr, &n) == 0) {\n    printf(\"n = %zu\\n\", n);\n    free_memory(arr);\n  }\n```
 
 - **上記の実行例**:
 
-   ```text\n  n = 26\n   ```
+   ```text\n  n = 26\n```
 
 #### load_txt_to_8x8
 
@@ -261,11 +262,11 @@
 - **戻り値**: `int`（正常終了時は `0`，失敗時は負数）
 - **最低限の使用例**:
 
-   ```c\n  int (*patterns)[8][8] = NULL;\n  size_t n = 0;\n  if (load_txt_to_8x8(\"font_data01.txt\", &patterns, &n) == 0) {\n    printf(\"n = %zu, bit=%d\\n\", n, patterns[0][0][3]);\n    free_memory(patterns);\n  }\n   ```
+   ```c\n  int (*patterns)[8][8] = NULL;\n  size_t n = 0;\n  if (load_txt_to_8x8(\"font_data01.txt\", &patterns, &n) == 0) {\n    printf(\"n = %zu, bit=%d\\n\", n, patterns[0][0][3]);\n    free_memory(patterns);\n  }\n```
 
 - **上記の実行例**:
 
-   ```text\n  n = 26, bit=1\n   ```
+   ```text\n  n = 26, bit=1\n```
 
 #### free_memory
 
@@ -275,11 +276,11 @@
 - **戻り値**: なし (`void`)
 - **最低限の使用例**:
 
-   ```c\n  int* ptr = malloc(10 * sizeof(int));\n  free_memory(ptr);\n   ```
+   ```c\n  int* ptr = malloc(10 * sizeof(int));\n  free_memory(ptr);\n```
 
 - **上記の実行例**:
 
-   ```text\n  free_memory: success\n   ```
+   ```text\n  free_memory: success\n```
 
 ---
 
@@ -295,11 +296,11 @@
 - **戻り値**: `PatternCoord`（元パターン座標）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  view.w = 8; view.h = 4;\n  view.rotation = ROTATE_90;\n  PatternCoord c = rotate_coord(&view, 2, 1);\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  view.w = 8; view.h = 4;\n  view.rotation = ROTATE_90;\n  PatternCoord c = rotate_coord(&view, 2, 1);\n```
 
 - **上記の実行例**:
 
-   ```text\n  rotate_coord(ROTATE_90, 2, 1): (1,1)\n   ```
+   ```text\n  rotate_coord(ROTATE_90, 2, 1): (1,1)\n```
 
 #### pattern_scaled_size
 
@@ -309,11 +310,11 @@
 - **戻り値**: `PatternSize`（拡大・回転後の出力幅 `width` および高さ `height`）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternSize s = pattern_scaled_size(&view);\n  printf(\"w=%zu, h=%zu\\n\", s.width, s.height);\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternSize s = pattern_scaled_size(&view);\n  printf(\"w=%zu, h=%zu\\n\", s.width, s.height);\n```
 
 - **上記の実行例**:
 
-   ```text\n  w=8, h=8\n   ```
+   ```text\n  w=8, h=8\n```
 
 #### resolve_coord
 
@@ -325,11 +326,11 @@
 - **戻り値**: `PatternCoord`（元パターン配列上の参照座標）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternCoord c = resolve_coord(&view, 0, 0);\n  printf(\"resolve(0,0) -> (%zu,%zu)\\n\", c.x, c.y);\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternCoord c = resolve_coord(&view, 0, 0);\n  printf(\"resolve(0,0) -> (%zu,%zu)\\n\", c.x, c.y);\n```
 
 - **上記の実行例**:
 
-   ```text\n  resolve(0,0) -> (0,7)\n   ```
+   ```text\n  resolve(0,0) -> (0,7)\n```
 
 ---
 
@@ -343,11 +344,11 @@
 - **戻り値**: `PatternIterator`（初期化済みのイテレータ）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternIterator it = new_iter(&view);\n  printf(\"out_w=%zu, out_h=%zu\\n\", it.out_w, it.out_h);\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternIterator it = new_iter(&view);\n  printf(\"out_w=%zu, out_h=%zu\\n\", it.out_w, it.out_h);\n```
 
 - **上記の実行例**:
 
-   ```text\n  out_w=8, out_h=8\n   ```
+   ```text\n  out_w=8, out_h=8\n```
 
 #### pattern_iterator_next
 
@@ -358,11 +359,11 @@
 - **戻り値**: `PatternEvent`（発生したイベント種別）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternIterator it = new_iter(&view);\n  PatternStep step;\n  if (pattern_iterator_next(&it, &step) == PATTERN_EVENT_CELL) {\n    printf(\"ch=%zu, src=(%zu,%zu)\\n\", step.ch, step.src_x, step.src_y);\n  }\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  PatternIterator it = new_iter(&view);\n  PatternStep step;\n  if (pattern_iterator_next(&it, &step) == PATTERN_EVENT_CELL) {\n    printf(\"ch=%zu, src=(%zu,%zu)\\n\", step.ch, step.src_x, step.src_y);\n  }\n```
 
 - **上記の実行例**:
 
-   ```text\n  ch=0, src=(0,7)\n   ```
+   ```text\n  ch=0, src=(0,7)\n```
 
 #### pattern_iterator_next_h
 
@@ -373,11 +374,11 @@
 - **戻り値**: `PatternEvent`（発生したイベント種別）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[2][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(2, dummy);\n  PatternIterator it = new_iter(&view);\n  PatternStep step;\n  if (pattern_iterator_next_h(&it, &step) == PATTERN_EVENT_CELL) {\n    printf(\"h_ch=%zu, src=(%zu,%zu)\\n\", step.ch, step.src_x, step.src_y);\n  }\n   ```
+   ```c\n  int dummy[2][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(2, dummy);\n  PatternIterator it = new_iter(&view);\n  PatternStep step;\n  if (pattern_iterator_next_h(&it, &step) == PATTERN_EVENT_CELL) {\n    printf(\"h_ch=%zu, src=(%zu,%zu)\\n\", step.ch, step.src_x, step.src_y);\n  }\n```
 
 - **上記の実行例**:
 
-   ```text\n  h_ch=0, src=(0,7)\n   ```
+   ```text\n  h_ch=0, src=(0,7)\n```
 
 ---
 
@@ -392,11 +393,11 @@
 - **戻り値**: `PatternView`（初期化済みの描画設定ビュー）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  printf(\"scale=%u, rot=%d\\n\", view.scale_w, view.rotation);\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view = new_pattern_view(1, dummy);\n  printf(\"scale=%u, rot=%d\\n\", view.scale_w, view.rotation);\n```
 
 - **上記の実行例**:
 
-   ```text\n  scale=1, rot=1\n   ```
+   ```text\n  scale=1, rot=1\n```
 
 #### new_pattern_view_doublescale
 
@@ -407,11 +408,11 @@
 - **戻り値**: `PatternView`（2倍スケール設定の描画ビュー）
 - **最低限の使用例**:
 
-   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view2x = new_pattern_view_doublescale(1, dummy);\n  printf(\"scale=%u\\n\", view2x.scale_w);\n   ```
+   ```c\n  int dummy[1][8][8] = {{{0}}};\n  PatternView view2x = new_pattern_view_doublescale(1, dummy);\n  printf(\"scale=%u\\n\", view2x.scale_w);\n```
 
 - **上記の実行例**:
 
-   ```text\n  scale=2\n   ```
+   ```text\n  scale=2\n```
 
 #### print_as_pattern
 
@@ -421,11 +422,11 @@
 - **戻り値**: なし (`void`)
 - **最低限の使用例**:
 
-   ```c\n  int patterns[1][8][8] = {{{0, 0, 1, 1, 0, 0, 0, 0},\n                            {0, 0, 1, 1, 0, 0, 0, 0},\n                            {0, 0, 1, 1, 0, 0, 0, 0},\n                            {1, 1, 1, 1, 1, 1, 0, 0},\n                            {1, 1, 0, 0, 1, 1, 0, 0},\n                            {1, 1, 0, 0, 1, 1, 0, 0},\n                            {1, 1, 0, 0, 1, 1, 0, 0},\n                            {0, 0, 0, 0, 0, 0, 0, 0}}};\n  PatternView view = new_pattern_view(1, patterns);\n  print_as_pattern(&view);\n   ```
+   ```c\n  int patterns[1][8][8] = {{{0, 0, 1, 1, 0, 0, 0, 0},\n                            {0, 0, 1, 1, 0, 0, 0, 0},\n                            {0, 0, 1, 1, 0, 0, 0, 0},\n                            {1, 1, 1, 1, 1, 1, 0, 0},\n                            {1, 1, 0, 0, 1, 1, 0, 0},\n                            {1, 1, 0, 0, 1, 1, 0, 0},\n                            {1, 1, 0, 0, 1, 1, 0, 0},\n                            {0, 0, 0, 0, 0, 0, 0, 0}}};\n  PatternView view = new_pattern_view(1, patterns);\n  print_as_pattern(&view);\n```
 
 - **上記の実行例**:
 
-   ```text\n   XXXX   \n   XXXX   \n      XXXX\n      XXXX\n   XXXX   \n   XXXX   \n   ```
+   ```text\n   XXXX   \n   XXXX   \n      XXXX\n      XXXX\n   XXXX   \n   XXXX   \n```
 
 ---
 
