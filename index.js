@@ -10,15 +10,15 @@ app.get("/", (req, res) => {
 });
 
 app.get("/english", (req, res) => {
-  res.write('Good Morning\n');
+  res.send('Good Morning\n');
 });
 
 app.get("/french", (req, res) => {
-  res.write('Bonjour\n');
+  res.send('Bonjour\n');
 });
 
 app.get("/german", (req, res) => {
-  res.write('Guten Morgen\n');
+  res.send('Guten Morgen\n');
 });
 
 app.use(function (req, res, next) {
