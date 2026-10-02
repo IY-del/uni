@@ -3,8 +3,8 @@
 #include "fontlib.h"
 
 int main(void) {
-  int (*patterns)[8][8];
-  size_t n;
+  int (*patterns)[8][8] = NULL;
+  size_t n = 0;
 
   int ret = load_txt_to_8x8("font_data02.txt", &patterns, &n);
   if (ret != 0) {
@@ -16,4 +16,5 @@ int main(void) {
   print_as_pattern(&view);
 
   free_memory(patterns);
+  return 0;
 }
