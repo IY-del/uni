@@ -9,6 +9,18 @@ app.get("/", (req, res) => {
   res.send('Hello, World\n');
 });
 
+app.get("/english", (req, res) => {
+  res.write('Good Morning\n');
+});
+
+app.get("/french", (req, res) => {
+  res.write('Bonjour\n');
+});
+
+app.get("/german", (req, res) => {
+  res.write('Guten Morgen\n');
+});
+
 app.use(function (req, res, next) {
   res.status(404).send('ページが見つかりません');
 });
