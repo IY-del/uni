@@ -9,7 +9,7 @@ app.get("/", (req, res) => {
   res.send('Hello, World\n');
 });
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.status(404).send('ページが見つかりません');
 });
 
