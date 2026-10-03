@@ -134,12 +134,12 @@ PatternEvent pattern_iterator_next_h(PatternIterator* it, PatternStep* step) {
 
 PatternView new_pattern_view(size_t count, void* pattern) {
   PatternView view = {.count = count,
-                      .h = PATTERN_DEFAULT_H,
-                      .w = PATTERN_DEFAULT_W,
+                      .h = 8,
+                      .w = 8,
                       .pattern = pattern,
                       .string = "X",
-                      .scale_w = PATTERN_SCALE_NORMAL,
-                      .scale_h = PATTERN_SCALE_NORMAL,
+                      .scale_w = 1,
+                      .scale_h = 1,
                       .rotation = ROTATE_90};
 
   return view;
@@ -147,8 +147,8 @@ PatternView new_pattern_view(size_t count, void* pattern) {
 
 PatternView new_pattern_view_doublescale(size_t count, void* pattern) {
   PatternView view = new_pattern_view(count, pattern);
-  view.scale_w = PATTERN_SCALE_DOUBLE;
-  view.scale_h = PATTERN_SCALE_DOUBLE;
+  view.scale_w = 2;
+  view.scale_h = 2;
   return view;
 }
 

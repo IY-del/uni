@@ -6,13 +6,6 @@
 void printx(int flag);
 void printxs(int flag, const char str[]);
 
-enum {
-  PATTERN_DEFAULT_H = 8,
-  PATTERN_DEFAULT_W = 8,
-  PATTERN_SCALE_NORMAL = 1,
-  PATTERN_SCALE_DOUBLE = 2
-};
-
 typedef enum { ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270 } PatternRotation;
 
 typedef enum {
