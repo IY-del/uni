@@ -30,7 +30,6 @@
       - [printxs](#printxs)
    - [3.2. パターン読み込み機能](#32-パターン読み込み機能)
       - [load\_txt](#load_txt)
-      - [load\_txt\_default](#load_txt_default)
       - [load\_txt\_to\_8x8](#load_txt_to_8x8)
       - [free\_memory](#free_memory)
    - [3.3. 座標変換・サイズ計算機能](#33-座標変換サイズ計算機能)
@@ -55,7 +54,7 @@
 
 本仕様書は，テキスト形式のフォントデータファイル（'0' および '1' のビット列）を読み込み，任意の拡大倍率（スケール）や回転方向（0°, 90°, 180°, 270°）を適用したうえで，端末画面（標準出力）上に大きな文字パターンとして描画するC言語ライブラリ **`fontlib`**（対象ファイル: `fontlib.c`，ヘッダー: `fontlib.h`）の仕様を規定する．
 
-本ライブラリは，マクロ定義（`#define`）やグローバル変数を一切排除し，関数引数・戻り値および構造体カプセル化による明確なデータ受け渡しを徹底している．また，ファイル読み込みにおける動的メモリ再配置（`realloc`）とインプレース終端ゼロクリアによる省メモリ・高速処理，定数（`PATTERN_DEFAULT_H`, `PATTERN_DEFAULT_W`）による型安全なシグネチャ設計，およびすべての公開・内部関数における入力値バリデーション（NULLポインタ検査，ゼロ除算防止ガード）を備えた堅牢な設計となっている．
+本ライブラリは，マクロ定義（`#define`）やグローバル変数を一切排除し，関数引数・戻り値および構造体カプセル化による明確なデータ受け渡しを徹底している．また，ファイル読み込みにおける動的メモリ再配置（`realloc`）とインプレース終端ゼロクリアによる省メモリ・高速処理，およびすべての公開・内部関数における入力値バリデーション（NULLポインタ検査，ゼロ除算防止ガード）を備えた堅牢な設計となっている．
 
 ### 1.2. 機能構成と責務
 
@@ -64,7 +63,7 @@
 | 機能群 | 役割・責務 | 主な提供関数 |
 | --- | --- | --- |
 | **基本表示機能** | 1セルの文字描画（`X` またはスペース，任意文字列）を行う基本出力機能 | `printx`, `printxs` |
-| **パターン読み込み機能** | テキストファイルから0/1列を抽出し，動的配列としてパターンを確保・解放する機能 | `load_txt`, `load_txt_default`, `load_txt_to_8x8`, `free_memory` |
+| **パターン読み込み機能** | テキストファイルから0/1列を抽出し，動的配列としてパターンを確保・解放する機能 | `load_txt`, `load_txt_to_8x8`, `free_memory` |
 | **座標変換・サイズ計算機能** | 回転角度および拡大倍率に基づき，出力座標系から元パターン座標系への逆写像と出力寸法計算を行う機能 | `rotate_coord`, `pattern_scaled_size`, `resolve_coord` |
 | **パターン走査機能** | 出力画面上の行優先または水平優先の走査状態を管理し，描画イベントを生成するイテレータ機能 | `new_iter`, `pattern_iterator_next`, `pattern_iterator_next_h` |
 | **パターン描画制御機能** | パターン描画条件（サイズ，スケール，回転，文字種）を保持し，イテレータを用いて描画を実行する機能 | `new_pattern_view`, `new_pattern_view_doublescale`, `print_as_pattern` |
@@ -355,20 +354,20 @@ typedef struct {
   n = 26
    ```
 
-#### load_txt_default
+#### load_txt_to_8x8
 
-- **関数の簡単な説明**: 内部で `load_txt(filename, PATTERN_DEFAULT_H, PATTERN_DEFAULT_W, &flat, out_n)` を呼び出し，定数定義された標準寸法（`PATTERN_DEFAULT_H` × `PATTERN_DEFAULT_W`）の2次元配列ポインタ型 `int (**out)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W]` にキャストして返却する．マジックナンバーを排除した型安全な標準フォント読み込み関数である．
+- **関数の簡単な説明**: 内部で `load_txt(filename, 8, 8, &flat, out_n)` を呼び出し，確保された1次元配列を 8×8 固定の2次元配列ポインタ型 `int (**out)[8][8]` に安全にキャストして返却するラッパー関数．
 - **パラメータ**:
    - `filename` (`const char filename[]`): フォントデータファイルのパス
-   - `out` (`int (**)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W]`): 標準サイズ2次元配列ポインタの書き込み先
+   - `out` (`int (**)[8][8]`): 8×8 配列ポインタの書き込み先
    - `out_n` (`size_t*`): 読み込んだ文字数の書き込み先
 - **戻り値**: `int`（正常終了時は `0`，失敗時は負数）
 - **最低限の使用例**:
 
    ```c
-  int (*patterns)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W] = NULL;
+  int (*patterns)[8][8] = NULL;
   size_t n = 0;
-  if (load_txt_default("font_data01.txt", &patterns, &n) == 0) {
+  if (load_txt_to_8x8("font_data01.txt", &patterns, &n) == 0) {
     printf("n = %zu, bit=%d\n", n, patterns[0][0][3]);
     free_memory(patterns);
   }
@@ -380,34 +379,9 @@ typedef struct {
   n = 26, bit=1
    ```
 
-#### load_txt_to_8x8
-
-- **関数の簡単な説明**: 従来の8×8固定サイズ指定コードとの後方互換性を維持するために提供される互換ラッパー関数．内部で `load_txt_default(filename, out, out_n)` を呼び出して処理を委譲する．
-- **パラメータ**:
-   - `filename` (`const char filename[]`): フォントデータファイルのパス
-   - `out` (`int (**)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W]`): 標準サイズ配列ポインタの書き込み先
-   - `out_n` (`size_t*`): 読み込んだ文字数の書き込み先
-- **戻り値**: `int`（正常終了時は `0`，失敗時は負数）
-- **最低限の使用例**:
-
-   ```c
-  int (*patterns)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W] = NULL;
-  size_t n = 0;
-  if (load_txt_to_8x8("font_data01.txt", &patterns, &n) == 0) {
-    printf("n = %zu\n", n);
-    free_memory(patterns);
-  }
-   ```
-
-- **上記の実行例**:
-
-   ```text
-  n = 26
-   ```
-
 #### free_memory
 
-- **関数の簡単な説明**: `load_txt`, `load_txt_default`, `load_txt_to_8x8` によって動的確保されたメモリ領域を解放する．`void*` を受け取るためキャスト不要で呼び出し可能であり，`NULL` が渡された場合も安全に何もしない．
+- **関数の簡単な説明**: `load_txt` または `load_txt_to_8x8` によって動的確保されたメモリ領域を解放する．`void*` を受け取るためキャスト不要で呼び出し可能であり，`NULL` が渡された場合も安全に何もしない．
 - **パラメータ**:
    - `arr` (`void*`): 解放対象の動的メモリ領域アドレス
 - **戻り値**: なし (`void`)
@@ -561,7 +535,7 @@ typedef struct {
   PatternIterator it = new_iter(&view);
   PatternStep step;
   if (pattern_iterator_next_h(&it, &step) == PATTERN_EVENT_CELL) {
-    printf("h_ch=%zu, src=(%zu,%zu)\n", step.ch, step.src_x, step.src_y);
+    printf("h_ch=%zu, src=(%zu,%zu)\n", step.ch, step.src_y, step.src_y);
   }
    ```
 

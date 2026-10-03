@@ -118,7 +118,6 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 #### 対象関数
 
 - [`load_txt`](fontlib.md#load_txt)
-- [`load_txt_default`](fontlib.md#load_txt_default)
 - [`load_txt_to_8x8`](fontlib.md#load_txt_to_8x8)
 - [`free_memory`](fontlib.md#free_memory)
 
@@ -131,8 +130,7 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 | `load_txt` | `"non_existent.txt"` | `ret=-1` | 【異常系】存在しないファイル指定時の安全なエラー返却確認 |
 | `load_txt` | `filename = NULL` | `ret=-1` | 【堅牢性】NULLポインタに対する引数ガードの確認 |
 | `load_txt` | `h = 0`（ゼロ除算境界） | `ret=-1` | 【安全性】0除算を引き起こす寸法に対する事前拒絶確認 |
-| `load_txt_default` | `"font_data01.txt"` | `ret=0, n=26` | 【仕様書使用例】定数寸法（`PATTERN_DEFAULT_H`×`W`）による型安全な読み込み確認 |
-| `load_txt_to_8x8` | `"font_data01.txt"` | `ret=0, n=26` | 【後方互換性】従来の8×8指定呼び出しの正常動作確認 |
+| `load_txt_to_8x8` | `"font_data01.txt"` | `ret=0, n=26` | 【仕様書使用例】8×8二次元配列ポインタへの型キャスト読み込み確認 |
 | `free_memory` | 確保済みポインタの解放 | 正常終了 | 【仕様書使用例】動的ヒープ領域の安全な解放確認 |
 | `free_memory` | `NULL` の解放 | 安全な無処理 | 【堅牢性】NULLポインタ解放時のセグフォ回避確認 |
 
@@ -154,8 +152,8 @@ gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
   load_txt(NULL, ...): ret=-1 (expected: -1)
   load_txt(..., h=0, ...): ret=-1 (expected: -1)
 
-[load_txt_default]
-  load_txt_default("font_data01.txt"): ret=0, n=26 (expected: ret=0, n=26)
+[load_txt_to_8x8]
+  load_txt_to_8x8("font_data01.txt"): ret=0, n=26 (expected: ret=0, n=26)
   letter 0 (8x8 bitmap):
     00011000
     00100100
@@ -166,9 +164,6 @@ gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
     01000010
     00000000
 
-[load_txt_to_8x8 (compatibility wrapper)]
-  load_txt_to_8x8("font_data01.txt"): ret=0, n=26 (expected: ret=0, n=26)
-
 [free_memory]
   free_memory(patterns): success
   free_memory(NULL): success (safe no-op)
@@ -176,12 +171,11 @@ gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
 
 #### 考察
 
-1. **定数を用いた型安全なインターフェース設計（`load_txt_default`）の証明**:
-   - `load_txt_default` を導入し，シグネチャおよび内部引数に `PATTERN_DEFAULT_H` と `PATTERN_DEFAULT_W` を適用したことで，マジックナンバー `8` を完全に排除した型安全なフォント読み込みが可能となった．
-   - また，従来の `load_txt_to_8x8` を互換ラッパーとして維持することで，既存の利用側コードを一切破壊することなくスムーズに移行できることが実証された．
-2. **`load_txt` の最適化（realloc によるインプレースパディング）の証明**:
+1. **`load_txt` の最適化（realloc によるインプレースパディング）の証明**:
    - 以前の実装に存在した「一時バッファ確保 → `calloc` による新配列確保 → `for` ループによる全件コピー → 一時バッファ解放」という冗長な二重確保・全件コピーを完全に撤廃し，読み込み完了後に `realloc` で必要要素数 $n \times (h \times w)$ へリサイズし末尾不足分のみ `memset` でゼロクリアする方式へと最適化した．
    - 実行結果より，読み込み文字数が `n = 26`，先頭文字の最上行ビットが `00011000` と正確に読み込まれており，簡素化後もデータの欠損や化けが一切生じていないことが実証された．
+2. **境界値・異常系の防護性**:
+   - NULLポインタや `h=0` 等の不正入力に対して即座に `-1` を返し，ゼロ除算（SIGFPE）やセグメンテーション違反を未然に防止できる堅牢性が実機実行により確認された．
 
 ---
 
@@ -456,7 +450,7 @@ gcc -Wall -Wextra -O2 main.c fontlib.c -o main
 #### 考察
 
 1. **実データ読み込みから画面描画・メモリ解放に至るパイプラインの証明**:
-   - `load_txt_default("font_data02.txt", &patterns, &n)` により26文字すべてのフォントデータが正常に読み込まれ，戻り値 `0` を返却してビュー構築へと引き渡された．
+   - `load_txt_to_8x8("font_data02.txt", &patterns, &n)` により26文字すべてのフォントデータが正常に読み込まれ，戻り値 `0` を返却してビュー構築へと引き渡された．
    - `new_pattern_view_doublescale` および `print_as_pattern` を経由して26文字すべての拡大パターンが画面に正しく描画され，終了直前の `free_memory(patterns)` によりメモリリークを生じることなく正常終了（終了コード `0`）することが実機上で実証された．
 2. **前期要件の完全な達成**:
    - ファイルからのフォントデータ読み込み動作，および構造体・引数・戻り値を通じた明示的なデータ受け渡しが，一切のグローバル変数に頼ることなく堅牢に成立していることが統合実行によって証明された．
@@ -467,12 +461,10 @@ gcc -Wall -Wextra -O2 main.c fontlib.c -o main
 
 本報告書の検証作業を通じて，以下の成果およびソフトウェア品質の保証が確認された．
 
-1. **定数に基づく型安全なシグネチャ設計**:
-   - `load_txt_default` の導入および型シグネチャへの定数（`PATTERN_DEFAULT_H`, `PATTERN_DEFAULT_W`）の適用により，ソースコード全体からマジックナンバーを排除しつつ，C言語の規格に厳格に準拠した型安全なフォント読み込みを実現した．
-2. **`load_txt` のリファクタリングによる保守性と実行効率の向上**:
+1. **`load_txt` のリファクタリングによる保守性と実行効率の向上**:
    - 従来の二重配列確保および全件コピー処理を `realloc` によるインプレースリサイズと終端ゼロクリアへ再設計したことで，コード行数を大幅に削減し，メモリ断片化およびアロケーションのオーバーヘッドを劇的に改善した．
-3. **static 関数を含む徹底した単体テスト容易性**:
+2. **static 関数を含む徹底した単体テスト容易性**:
    - モジュールのカプセル化（情報隠蔽）を維持しつつ，C言語のソースインクルード手法を用いることで，内部関数 `rotate_coord` を直接単体テスト対象として網羅した．
    - これにより，公開インターフェース経由の間接検証だけでは見落とされがちな内部座標写像の境界値（非正方形データでの軸反転，各回転角の原点・対角座標）を完璧に保証できた．
-4. **仕様書とテスト結果の完全なトレーサビリティ**:
+3. **仕様書とテスト結果の完全なトレーサビリティ**:
    - 仕様書 `fontlib.md` の各関数仕様に記載された「最低限の使用例」と，本報告書のテストプログラム実行結果が1対1で整合しており，設計仕様に対する実装の妥当性が実証された．
