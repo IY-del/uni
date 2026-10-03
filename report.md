@@ -72,22 +72,36 @@
 
 #### テスト項目と仕様書使用例との対比
 
-| 関数      | 入力値・検証内容        | 期待値       | 仕様書との対比・検証観点                                                     |
-| :-------- | :---------------------- | :----------- | :--------------------------------------------------------------------------- |
-| `printx`  | `flag = 1`              | `"X"`        | 【仕様書使用例】代表真値に対する `"X"` 1文字出力の確認                       |
-| `printx`  | `flag = 0`              | `" "`        | 【仕様書使用例】偽値に対する空白（スペース）1文字出力の確認                  |
-| `printx`  | `flag = 2`              | `"X"`        | 【同値分割】1以外の正整数（C言語の真論理）に対する `"X"` 出力の確認          |
-| `printxs` | `flag = 1, str = "ABC"` | `"ABC"`      | 【仕様書使用例】真値に対する指定文字列 `"ABC"` の直接出力確認                |
-| `printxs` | `flag = 0, str = "ABC"` | `" "`        | 【仕様書使用例】偽値に対する空白1文字出力（文字列長に依存せず1セル幅）の確認 |
-| `printxs` | `flag = 1, str = NULL`  | （出力なし） | 【堅牢性】NULLポインタ引数に対するクラッシュ回避・安全ガードの確認           |
+| 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
+| :--- | :--- | :--- | :--- |
+| `printx` | `flag = 1` | `"X"` | 【仕様書使用例】代表真値に対する `"X"` 1文字出力の確認 |
+| `printx` | `flag = 0` | `" "` | 【仕様書使用例】偽値に対する空白（スペース）1文字出力の確認 |
+| `printx` | `flag = 2` | `"X"` | 【同値分割】1以外の正整数（C言語の真論理）に対する `"X"` 出力の確認 |
+| `printxs` | `flag = 1, str = "ABC"` | `"ABC"` | 【仕様書使用例】真値に対する指定文字列 `"ABC"` の直接出力確認 |
+| `printxs` | `flag = 0, str = "ABC"` | `" "` | 【仕様書使用例】偽値に対する空白1文字出力（文字列長に依存せず1セル幅）の確認 |
+| `printxs` | `flag = 1, str = NULL` | （出力なし） | 【堅牢性】NULLポインタ引数に対するクラッシュ回避・安全ガードの確認 |
 
 #### コンパイルおよび実行コマンド
 
-```sh\ngcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib\n./test_fontlib\n```
+```sh
+gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
+./test_fontlib
+```
 
 #### 実行結果
 
-```text\n=== 1. 基本表示機能 ===\n[printx]\n  printx(1): \"X\" (expected: \"X\")\n  printx(0): \" \" (expected: \" \")\n  printx(2): \"X\" (expected: \"X\")\n\n[printxs]\n  printxs(1, \"ABC\"): \"ABC\" (expected: \"ABC\")\n  printxs(0, \"ABC\"): \" \" (expected: \" \")\n  printxs(1, NULL): (safe no-op)\n```
+```text
+=== 1. 基本表示機能 ===
+[printx]
+  printx(1): "X" (expected: "X")
+  printx(0): " " (expected: " ")
+  printx(2): "X" (expected: "X")
+
+[printxs]
+  printxs(1, "ABC"): "ABC" (expected: "ABC")
+  printxs(0, "ABC"): " " (expected: " ")
+  printxs(1, NULL): (safe no-op)
+```
 
 #### 考察
 
@@ -104,37 +118,70 @@
 #### 対象関数
 
 - [`load_txt`](fontlib.md#load_txt)
+- [`load_txt_default`](fontlib.md#load_txt_default)
 - [`load_txt_to_8x8`](fontlib.md#load_txt_to_8x8)
 - [`free_memory`](fontlib.md#free_memory)
 
 #### テスト項目と仕様書使用例との対比
 
-| 関数              | 入力値・検証内容              | 期待値        | 仕様書との対比・検証観点                                                   |
-| :---------------- | :---------------------------- | :------------ | :------------------------------------------------------------------------- |
-| `load_txt`        | `"font_data01.txt", h=8, w=8` | `ret=0, n=26` | 【仕様書使用例】実ファイルからの動的確保と文字数取得の確認                 |
-| `load_txt`        | 先頭文字の先頭行参照          | `00011000`    | 【ビット正確性】抽出ビット列が元データ通り正確に配列化されていることの確認 |
-| `load_txt`        | `"non_existent.txt"`          | `ret=-1`      | 【異常系】存在しないファイル指定時の安全なエラー返却確認                   |
-| `load_txt`        | `filename = NULL`             | `ret=-1`      | 【堅牢性】NULLポインタに対する引数ガードの確認                             |
-| `load_txt`        | `h = 0`（ゼロ除算境界）       | `ret=-1`      | 【安全性】0除算を引き起こす寸法に対する事前拒絶確認                        |
-| `load_txt_to_8x8` | `"font_data01.txt"`           | `ret=0, n=26` | 【仕様書使用例】8×8二次元配列ポインタへの型キャスト読み込み確認            |
-| `free_memory`     | 確保済みポインタの解放        | 正常終了      | 【仕様書使用例】動的ヒープ領域の安全な解放確認                             |
-| `free_memory`     | `NULL` の解放                 | 安全な無処理  | 【堅牢性】NULLポインタ解放時のセグフォ回避確認                             |
+| 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
+| :--- | :--- | :--- | :--- |
+| `load_txt` | `"font_data01.txt", h=8, w=8` | `ret=0, n=26` | 【仕様書使用例】実ファイルからの動的確保と文字数取得の確認 |
+| `load_txt` | 先頭文字の先頭行参照 | `00011000` | 【ビット正確性】抽出ビット列が元データ通り正確に配列化されていることの確認 |
+| `load_txt` | `"non_existent.txt"` | `ret=-1` | 【異常系】存在しないファイル指定時の安全なエラー返却確認 |
+| `load_txt` | `filename = NULL` | `ret=-1` | 【堅牢性】NULLポインタに対する引数ガードの確認 |
+| `load_txt` | `h = 0`（ゼロ除算境界） | `ret=-1` | 【安全性】0除算を引き起こす寸法に対する事前拒絶確認 |
+| `load_txt_default` | `"font_data01.txt"` | `ret=0, n=26` | 【仕様書使用例】定数寸法（`PATTERN_DEFAULT_H`×`W`）による型安全な読み込み確認 |
+| `load_txt_to_8x8` | `"font_data01.txt"` | `ret=0, n=26` | 【後方互換性】従来の8×8指定呼び出しの正常動作確認 |
+| `free_memory` | 確保済みポインタの解放 | 正常終了 | 【仕様書使用例】動的ヒープ領域の安全な解放確認 |
+| `free_memory` | `NULL` の解放 | 安全な無処理 | 【堅牢性】NULLポインタ解放時のセグフォ回避確認 |
 
 #### コンパイルおよび実行コマンド
 
-```sh\ngcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern\n./test_get_pattern\n```
+```sh
+gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
+./test_get_pattern
+```
 
 #### 実行結果
 
-```text\n=== 2. パターン読み込み・メモリ管理機能 ===\n[load_txt]\n  load_txt(\"font_data01.txt\", 8, 8): ret=0, n=26 (expected: ret=0, n=26)\n  first letter top row: 00011000 (expected: 00011000)\n  load_txt(\"non_existent.txt\"): ret=-1 (expected: -1)\n  load_txt(NULL, ...): ret=-1 (expected: -1)\n  load_txt(..., h=0, ...): ret=-1 (expected: -1)\n\n[load_txt_to_8x8]\n  load_txt_to_8x8(\"font_data01.txt\"): ret=0, n=26 (expected: ret=0, n=26)\n  letter 0 (8x8 bitmap):\n    00011000\n    00100100\n    01000010\n    01000010\n    01111110\n    01000010\n    01000010\n    00000000\n\n[free_memory]\n  free_memory(patterns): success\n  free_memory(NULL): success (safe no-op)\n```
+```text
+=== 2. パターン読み込み・メモリ管理機能 ===
+[load_txt]
+  load_txt("font_data01.txt", 8, 8): ret=0, n=26 (expected: ret=0, n=26)
+  first letter top row: 00011000 (expected: 00011000)
+  load_txt("non_existent.txt"): ret=-1 (expected: -1)
+  load_txt(NULL, ...): ret=-1 (expected: -1)
+  load_txt(..., h=0, ...): ret=-1 (expected: -1)
+
+[load_txt_default]
+  load_txt_default("font_data01.txt"): ret=0, n=26 (expected: ret=0, n=26)
+  letter 0 (8x8 bitmap):
+    00011000
+    00100100
+    01000010
+    01000010
+    01111110
+    01000010
+    01000010
+    00000000
+
+[load_txt_to_8x8 (compatibility wrapper)]
+  load_txt_to_8x8("font_data01.txt"): ret=0, n=26 (expected: ret=0, n=26)
+
+[free_memory]
+  free_memory(patterns): success
+  free_memory(NULL): success (safe no-op)
+```
 
 #### 考察
 
-1. **`load_txt` の最適化（realloc によるインプレースパディング）の証明**:
+1. **定数を用いた型安全なインターフェース設計（`load_txt_default`）の証明**:
+   - `load_txt_default` を導入し，シグネチャおよび内部引数に `PATTERN_DEFAULT_H` と `PATTERN_DEFAULT_W` を適用したことで，マジックナンバー `8` を完全に排除した型安全なフォント読み込みが可能となった．
+   - また，従来の `load_txt_to_8x8` を互換ラッパーとして維持することで，既存の利用側コードを一切破壊することなくスムーズに移行できることが実証された．
+2. **`load_txt` の最適化（realloc によるインプレースパディング）の証明**:
    - 以前の実装に存在した「一時バッファ確保 → `calloc` による新配列確保 → `for` ループによる全件コピー → 一時バッファ解放」という冗長な二重確保・全件コピーを完全に撤廃し，読み込み完了後に `realloc` で必要要素数 $n \times (h \times w)$ へリサイズし末尾不足分のみ `memset` でゼロクリアする方式へと最適化した．
    - 実行結果より，読み込み文字数が `n = 26`，先頭文字の最上行ビットが `00011000` と正確に読み込まれており，簡素化後もデータの欠損や化けが一切生じていないことが実証された．
-2. **境界値・異常系の防護性**:
-   - NULLポインタや `h=0` 等の不正入力に対して即座に `-1` を返し，ゼロ除算（SIGFPE）やセグメンテーション違反を未然に防止できる堅牢性が実機実行により確認された．
 
 ---
 
@@ -148,24 +195,58 @@
 
 #### テスト項目と仕様書使用例との対比
 
-| 関数                  | 入力値・検証内容                          | 期待値                    | 仕様書との対比・検証観点                                   |
-| :-------------------- | :---------------------------------------- | :------------------------ | :--------------------------------------------------------- |
-| `rotate_coord`        | `ROTATE_0, (2, 1)`                        | `(2, 1)`                  | 【内部関数単体検証】回転なし時の論理座標維持確認           |
-| `rotate_coord`        | `ROTATE_90, (2, 1)`                       | `(1, 1)`                  | 【内部関数単体検証】時計回り90度回転時の軸入替・反転確認   |
-| `rotate_coord`        | `ROTATE_180, (2, 1)`                      | `(5, 2)`                  | 【内部関数単体検証】180度回転時の点対称座標写像確認        |
-| `rotate_coord`        | `ROTATE_270, (2, 1)`                      | `(6, 2)`                  | 【内部関数単体検証】270度回転時の写像確認                  |
-| `pattern_scaled_size` | 非正方形（w=8, h=4）, 各回転角            | 0/180°: 8×4, 90/270°: 4×8 | 【軸転置検証】非正方形パターンによる縦横入替バグの検出確認 |
-| `pattern_scaled_size` | スケール倍率（w=3, h=2）                  | w=24, h=8                 | 【仕様書使用例】拡大倍率の正確な乗算確認                   |
-| `resolve_coord`       | 原点 `(0, 0)` および最遠境界 `(w-1, h-1)` | 設計計算値                | 【境界値分析】回転オフセットのオフバイワンエラー排除確認   |
-| `resolve_coord`       | `view = NULL`                             | `(0, 0)`                  | 【堅牢性】NULLポインタ入力時の安全ガード確認               |
+| 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
+| :--- | :--- | :--- | :--- |
+| `rotate_coord` | `ROTATE_0, (2, 1)` | `(2, 1)` | 【内部関数単体検証】回転なし時の論理座標維持確認 |
+| `rotate_coord` | `ROTATE_90, (2, 1)` | `(1, 1)` | 【内部関数単体検証】時計回り90度回転時の軸入替・反転確認 |
+| `rotate_coord` | `ROTATE_180, (2, 1)` | `(5, 2)` | 【内部関数単体検証】180度回転時の点対称座標写像確認 |
+| `rotate_coord` | `ROTATE_270, (2, 1)` | `(6, 2)` | 【内部関数単体検証】270度回転時の写像確認 |
+| `pattern_scaled_size` | 非正方形（w=8, h=4）, 各回転角 | 0/180°: 8×4, 90/270°: 4×8 | 【軸転置検証】非正方形パターンによる縦横入替バグの検出確認 |
+| `pattern_scaled_size` | スケール倍率（w=3, h=2） | w=24, h=8 | 【仕様書使用例】拡大倍率の正確な乗算確認 |
+| `resolve_coord` | 原点 `(0, 0)` および最遠境界 `(w-1, h-1)` | 設計計算値 | 【境界値分析】回転オフセットのオフバイワンエラー排除確認 |
+| `resolve_coord` | `view = NULL` | `(0, 0)` | 【堅牢性】NULLポインタ入力時の安全ガード確認 |
 
 #### コンパイルおよび実行コマンド
 
-```sh\n# static 関数の直接単体テストを含むため test_get_coord.c を直接コンパイル\ngcc -Wall -Wextra test_get_coord.c -o test_get_coord\n./test_get_coord\n```
+```sh
+# static 関数の直接単体テストを含むため test_get_coord.c を直接コンパイル
+gcc -Wall -Wextra test_get_coord.c -o test_get_coord
+./test_get_coord
+```
 
 #### 実行結果
 
-```text\n=== 3. 座標変換・サイズ計算機能 ===\n[rotate_coord (static)]\n  rotate_coord(ROTATE_0, 2, 1): (2,1) (expected: (2,1))\n  rotate_coord(ROTATE_90, 2, 1): (1,1) (expected: (1,1))\n  rotate_coord(ROTATE_180, 2, 1): (5,2) (expected: (5,2))\n  rotate_coord(ROTATE_270, 2, 1): (6,2) (expected: (6,2))\n  rotate_coord(NULL, 0, 0): (0,0) (expected: (0,0))\n\n[pattern_scaled_size]\n  rotate0:               size=(w=8,h=4) (expected: w=8,h=4)\n  rotate90:              size=(w=4,h=8) (expected: w=4,h=8)\n  rotate180:             size=(w=8,h=4) (expected: w=8,h=4)\n  rotate270:             size=(w=4,h=8) (expected: w=4,h=8)\n  scale_w3_h2:           size=(w=24,h=8) (expected: w=24,h=8)\n  rotate90_scale_w3_h2:  size=(w=12,h=16) (expected: w=12,h=16)\n  pattern_scaled_size(NULL): (w=0,h=0) (expected: (0,0))\n\n[resolve_coord]\n  rotate0:               resolve(0,0) -> (0,0) (expected: (0,0))\n  rotate0 corner:        resolve(7,3) -> (7,3) (expected: (7,3))\n  rotate90:              resolve(0,0) -> (0,3) (expected: (0,3))\n  rotate90 corner:       resolve(3,7) -> (7,0) (expected: (7,0))\n  rotate180:             resolve(0,0) -> (7,3) (expected: (7,3))\n  rotate180 corner:      resolve(7,3) -> (0,0) (expected: (0,0))\n  rotate270:             resolve(0,0) -> (7,0) (expected: (7,0))\n  rotate270 corner:      resolve(3,7) -> (0,3) (expected: (0,3))\n  scale_w3_h2:           resolve(0,0) -> (0,0) (expected: (0,0))\n  rotate90_scale_w3_h2:  resolve(0,0) -> (0,3) (expected: (0,3))\n  resolve_coord(NULL, 0, 0): (0,0) (expected: (0,0))\n```
+```text
+=== 3. 座標変換・サイズ計算機能 ===
+[rotate_coord (static)]
+  rotate_coord(ROTATE_0, 2, 1): (2,1) (expected: (2,1))
+  rotate_coord(ROTATE_90, 2, 1): (1,1) (expected: (1,1))
+  rotate_coord(ROTATE_180, 2, 1): (5,2) (expected: (5,2))
+  rotate_coord(ROTATE_270, 2, 1): (6,2) (expected: (6,2))
+  rotate_coord(NULL, 0, 0): (0,0) (expected: (0,0))
+
+[pattern_scaled_size]
+  rotate0:               size=(w=8,h=4) (expected: w=8,h=4)
+  rotate90:              size=(w=4,h=8) (expected: w=4,h=8)
+  rotate180:             size=(w=8,h=4) (expected: w=8,h=4)
+  rotate270:             size=(w=4,h=8) (expected: w=4,h=8)
+  scale_w3_h2:           size=(w=24,h=8) (expected: w=24,h=8)
+  rotate90_scale_w3_h2:  size=(w=12,h=16) (expected: w=12,h=16)
+  pattern_scaled_size(NULL): (w=0,h=0) (expected: (0,0))
+
+[resolve_coord]
+  rotate0:               resolve(0,0) -> (0,0) (expected: (0,0))
+  rotate0 corner:        resolve(7,3) -> (7,3) (expected: (7,3))
+  rotate90:              resolve(0,0) -> (0,3) (expected: (0,3))
+  rotate90 corner:       resolve(3,7) -> (7,0) (expected: (7,0))
+  rotate180:             resolve(0,0) -> (7,3) (expected: (7,3))
+  rotate180 corner:      resolve(7,3) -> (0,0) (expected: (0,0))
+  rotate270:             resolve(0,0) -> (7,0) (expected: (7,0))
+  rotate270 corner:      resolve(3,7) -> (0,3) (expected: (0,3))
+  scale_w3_h2:           resolve(0,0) -> (0,0) (expected: (0,0))
+  rotate90_scale_w3_h2:  resolve(0,0) -> (0,3) (expected: (0,3))
+  resolve_coord(NULL, 0, 0): (0,0) (expected: (0,0))
+```
 
 #### 考察
 
@@ -188,20 +269,55 @@
 
 #### テスト項目と仕様書使用例との対比
 
-| 関数                      | 入力値・検証内容         | 期待値                                  | 仕様書との対比・検証観点                                         |
-| :------------------------ | :----------------------- | :-------------------------------------- | :--------------------------------------------------------------- |
-| `new_iter`                | `view`（文字数2）        | `out_w=8, out_h=8, x=0, y=0, ch=0`      | 【仕様書使用例】イテレータ初期状態（原点・出力寸法）の構築確認   |
-| `pattern_iterator_next`   | 2文字分のパターン走査    | `CELL` → `NEWLINE` → `ch`更新 → `END`   | 【状態遷移】行優先（1文字完結型）のイベント発行シーケンス確認    |
-| `pattern_iterator_next_h` | 2文字分のパターン走査    | 同一行全文字 `CELL` → `NEWLINE` → `END` | 【状態遷移】水平優先（全文字並行型）のイベント発行シーケンス確認 |
-| `pattern_iterator_next`   | `it = NULL, step = NULL` | `PATTERN_EVENT_END`                     | 【堅牢性】NULLポインタに対する安全な走査停止ガード確認           |
+| 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
+| :--- | :--- | :--- | :--- |
+| `new_iter` | `view`（文字数2） | `out_w=8, out_h=8, x=0, y=0, ch=0` | 【仕様書使用例】イテレータ初期状態（原点・出力寸法）の構築確認 |
+| `pattern_iterator_next` | 2文字分のパターン走査 | `CELL` → `NEWLINE` → `ch`更新 → `END` | 【状態遷移】行優先（1文字完結型）のイベント発行シーケンス確認 |
+| `pattern_iterator_next_h` | 2文字分のパターン走査 | 同一行全文字 `CELL` → `NEWLINE` → `END` | 【状態遷移】水平優先（全文字並行型）のイベント発行シーケンス確認 |
+| `pattern_iterator_next` | `it = NULL, step = NULL` | `PATTERN_EVENT_END` | 【堅牢性】NULLポインタに対する安全な走査停止ガード確認 |
 
 #### コンパイルおよび実行コマンド
 
-```sh\ngcc -Wall -Wextra test_iterator.c fontlib.c -o test_iterator\n./test_iterator\n```
+```sh
+gcc -Wall -Wextra test_iterator.c fontlib.c -o test_iterator
+./test_iterator
+```
 
 #### 実行結果（抜粋）
 
-```text\n=== 4. パターン走査機能 ===\n[new_iter]\n  new_iter: out_w=8 out_h=8 x=0 y=0 ch=0 (expected: out_w=8 out_h=8 x=0 y=0 ch=0)\n\n[pattern_iterator_next (行優先走査)]\npattern_iterator_next\nCELL ch=0 src=(0,7)\nCELL ch=0 src=(0,6)\n...\nNEWLINE\nCELL ch=0 src=(1,7)\n...\nNEWLINE\nCELL ch=1 src=(0,7)\n...\nEND\n\n[pattern_iterator_next_h (水平優先走査)]\npattern_iterator_next_h\nCELL ch=0 src=(0,7)\n...\nCELL ch=0 src=(0,0)\nCELL ch=1 src=(0,7)\n...\nCELL ch=1 src=(0,0)\nNEWLINE\n...\nEND\n\n[NULL Safety]\n  pattern_iterator_next(NULL, NULL): 0 (expected: 0)\n```
+```text
+=== 4. パターン走査機能 ===
+[new_iter]
+  new_iter: out_w=8 out_h=8 x=0 y=0 ch=0 (expected: out_w=8 out_h=8 x=0 y=0 ch=0)
+
+[pattern_iterator_next (行優先走査)]
+pattern_iterator_next
+CELL ch=0 src=(0,7)
+CELL ch=0 src=(0,6)
+...
+NEWLINE
+CELL ch=0 src=(1,7)
+...
+NEWLINE
+CELL ch=1 src=(0,7)
+...
+END
+
+[pattern_iterator_next_h (水平優先走査)]
+pattern_iterator_next_h
+CELL ch=0 src=(0,7)
+...
+CELL ch=0 src=(0,0)
+CELL ch=1 src=(0,7)
+...
+CELL ch=1 src=(0,0)
+NEWLINE
+...
+END
+
+[NULL Safety]
+  pattern_iterator_next(NULL, NULL): 0 (expected: 0)
+```
 
 #### 考察
 
@@ -223,21 +339,62 @@
 
 #### テスト項目と仕様書使用例との対比
 
-| 関数                           | 入力値・検証内容   | 期待値                           | 仕様書との対比・検証観点                                            |
-| :----------------------------- | :----------------- | :------------------------------- | :------------------------------------------------------------------ |
-| `new_pattern_view`             | `count=1, pattern` | `scale=1, rotation=1(ROTATE_90)` | 【仕様書使用例】標準等倍・正立回転パラメータの初期化確認            |
-| `new_pattern_view_doublescale` | `count=1, pattern` | `scale=2, rotation=1(ROTATE_90)` | 【仕様書使用例】縦横2倍拡大パラメータの初期化確認                   |
-| `print_as_pattern`             | 標準ビュー（等倍） | 8×8の文字パターン表示            | 【仕様書使用例】ビット `1` に対する `"X"` 描画と改行の整合性確認    |
-| `print_as_pattern`             | 2倍ビュー          | 16×16の拡大パターン表示          | 【仕様書使用例】各セルが 2×2 の文字ブロックへと拡大されることの確認 |
-| `print_as_pattern`             | `view = NULL`      | 安全な無処理                     | 【堅牢性】NULLポインタに対するクラッシュ回避ガード確認              |
+| 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
+| :--- | :--- | :--- | :--- |
+| `new_pattern_view` | `count=1, pattern` | `scale=1, rotation=1(ROTATE_90)` | 【仕様書使用例】標準等倍・正立回転パラメータの初期化確認 |
+| `new_pattern_view_doublescale` | `count=1, pattern` | `scale=2, rotation=1(ROTATE_90)` | 【仕様書使用例】縦横2倍拡大パラメータの初期化確認 |
+| `print_as_pattern` | 標準ビュー（等倍） | 8×8の文字パターン表示 | 【仕様書使用例】ビット `1` に対する `"X"` 描画と改行の整合性確認 |
+| `print_as_pattern` | 2倍ビュー | 16×16の拡大パターン表示 | 【仕様書使用例】各セルが 2×2 の文字ブロックへと拡大されることの確認 |
+| `print_as_pattern` | `view = NULL` | 安全な無処理 | 【堅牢性】NULLポインタに対するクラッシュ回避ガード確認 |
 
 #### コンパイルおよび実行コマンド
 
-```sh\ngcc -Wall -Wextra test_print_pattern.c fontlib.c -o test_print_pattern\n./test_print_pattern\n```
+```sh
+gcc -Wall -Wextra test_print_pattern.c fontlib.c -o test_print_pattern
+./test_print_pattern
+```
 
 #### 実行結果
 
-```text\n=== 5. パターン描画制御機能 ===\n[new_pattern_view]\n  normal: h=8 w=8 scale_w=1 scale_h=1 rotation=1\n\n[new_pattern_view_doublescale]\n  double: h=8 w=8 scale_w=2 scale_h=2 rotation=1\n\n[print_as_pattern (normal)]\n XXXX   \n XXXX   \n    XXXX\n    XXXX\n XXXX   \n XXXX   \n        \n        \n\n[print_as_pattern (double scale)]\n  XXXXXXXX      \n  XXXXXXXX      \n  XXXXXXXX      \n  XXXXXXXX      \n        XXXXXXXX\n        XXXXXXXX\n        XXXXXXXX\n        XXXXXXXX\n  XXXXXXXX      \n  XXXXXXXX      \n  XXXXXXXX      \n  XXXXXXXX      \n                \n                \n                \n                \n\n[NULL Safety]\n  print_as_pattern(NULL): safe no-op\n```
+```text
+=== 5. パターン描画制御機能 ===
+[new_pattern_view]
+  normal: h=8 w=8 scale_w=1 scale_h=1 rotation=1
+
+[new_pattern_view_doublescale]
+  double: h=8 w=8 scale_w=2 scale_h=2 rotation=1
+
+[print_as_pattern (normal)]
+ XXXX   
+ XXXX   
+    XXXX
+    XXXX
+ XXXX   
+ XXXX   
+        
+        
+
+[print_as_pattern (double scale)]
+  XXXXXXXX      
+  XXXXXXXX      
+  XXXXXXXX      
+  XXXXXXXX      
+        XXXXXXXX
+        XXXXXXXX
+        XXXXXXXX
+        XXXXXXXX
+  XXXXXXXX      
+  XXXXXXXX      
+  XXXXXXXX      
+  XXXXXXXX      
+                
+                
+                
+                
+
+[NULL Safety]
+  print_as_pattern(NULL): safe no-op
+```
 
 #### 考察
 
@@ -254,16 +411,52 @@
 
 #### 実行コマンド
 
-```sh\ngcc -Wall -Wextra -O2 main.c fontlib.c -o main\n./main\n```
+```sh
+gcc -Wall -Wextra -O2 main.c fontlib.c -o main
+./main
+```
 
 #### 実行結果（抜粋）
 
-```text\n  XX            \n  XX            \n  XXXXXXXXXXXX  \n  XXXXXXXXXXXX  \n  XX    XX    XX\n  XX    XX    XX\n        XX    XX\n        XX    XX\n  XX    XX    XX\n  XX    XX    XX\n  XXXXXXXXXXXX  \n  XXXXXXXXXXXX  \n  XX            \n  XX            \n                \n                \n\n  XX          XX\n  XX          XX\n  XXXXXXXXXXXXXX\n  XXXXXXXXXXXXXX\n  XX    XX    XX\n  XX    XX    XX\n  XX    XX    XX\n  XX    XX    XX\n  XX    XX    XX\n  XX    XX    XX\n    XXXX  XXXX  \n    XXXX  XXXX  \n                \n                \n...\n```
+```text
+  XX            
+  XX            
+  XXXXXXXXXXXX  
+  XXXXXXXXXXXX  
+  XX    XX    XX
+  XX    XX    XX
+        XX    XX
+        XX    XX
+  XX    XX    XX
+  XX    XX    XX
+  XXXXXXXXXXXX  
+  XXXXXXXXXXXX  
+  XX            
+  XX            
+                
+                
+
+  XX          XX
+  XX          XX
+  XXXXXXXXXXXXXX
+  XXXXXXXXXXXXXX
+  XX    XX    XX
+  XX    XX    XX
+  XX    XX    XX
+  XX    XX    XX
+  XX    XX    XX
+  XX    XX    XX
+    XXXX  XXXX  
+    XXXX  XXXX  
+                
+                
+...
+```
 
 #### 考察
 
 1. **実データ読み込みから画面描画・メモリ解放に至るパイプラインの証明**:
-   - `load_txt_to_8x8("font_data02.txt", &patterns, &n)` により26文字すべてのフォントデータが正常に読み込まれ，戻り値 `0` を返却してビュー構築へと引き渡された．
+   - `load_txt_default("font_data02.txt", &patterns, &n)` により26文字すべてのフォントデータが正常に読み込まれ，戻り値 `0` を返却してビュー構築へと引き渡された．
    - `new_pattern_view_doublescale` および `print_as_pattern` を経由して26文字すべての拡大パターンが画面に正しく描画され，終了直前の `free_memory(patterns)` によりメモリリークを生じることなく正常終了（終了コード `0`）することが実機上で実証された．
 2. **前期要件の完全な達成**:
    - ファイルからのフォントデータ読み込み動作，および構造体・引数・戻り値を通じた明示的なデータ受け渡しが，一切のグローバル変数に頼ることなく堅牢に成立していることが統合実行によって証明された．
@@ -274,10 +467,12 @@
 
 本報告書の検証作業を通じて，以下の成果およびソフトウェア品質の保証が確認された．
 
-1. **`load_txt` のリファクタリングによる保守性と実行効率の向上**:
+1. **定数に基づく型安全なシグネチャ設計**:
+   - `load_txt_default` の導入および型シグネチャへの定数（`PATTERN_DEFAULT_H`, `PATTERN_DEFAULT_W`）の適用により，ソースコード全体からマジックナンバーを排除しつつ，C言語の規格に厳格に準拠した型安全なフォント読み込みを実現した．
+2. **`load_txt` のリファクタリングによる保守性と実行効率の向上**:
    - 従来の二重配列確保および全件コピー処理を `realloc` によるインプレースリサイズと終端ゼロクリアへ再設計したことで，コード行数を大幅に削減し，メモリ断片化およびアロケーションのオーバーヘッドを劇的に改善した．
-2. **static 関数を含む徹底した単体テスト容易性**:
+3. **static 関数を含む徹底した単体テスト容易性**:
    - モジュールのカプセル化（情報隠蔽）を維持しつつ，C言語のソースインクルード手法を用いることで，内部関数 `rotate_coord` を直接単体テスト対象として網羅した．
    - これにより，公開インターフェース経由の間接検証だけでは見落とされがちな内部座標写像の境界値（非正方形データでの軸反転，各回転角の原点・対角座標）を完璧に保証できた．
-3. **仕様書とテスト結果の完全なトレーサビリティ**:
+4. **仕様書とテスト結果の完全なトレーサビリティ**:
    - 仕様書 `fontlib.md` の各関数仕様に記載された「最低限の使用例」と，本報告書のテストプログラム実行結果が1対1で整合しており，設計仕様に対する実装の妥当性が実証された．
