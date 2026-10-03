@@ -58,6 +58,10 @@
    - マクロ定義（`#define`）やグローバル変数を一切使用せず，構造体（`PatternView`, `PatternSize`, `PatternCoord`, `PatternIterator`, `PatternStep`）のカプセル化やポインタ引数・戻り値を通じてモジュール間のデータを安全かつ明示的に授受する．
 3. **仕様書の使用例との対比検証**:
    - 各機能群のテストプログラムにおいて，仕様書に規定した「最低限の使用例」および境界値・異常系ケースを直接網羅し，証明したい機能に合致する出力結果が得られていることを対比・実証する．
+4. **テスト関数のモジュール化と統一的命名規則**:
+   - 各テストプログラム（`test_*.c`）において，`main` 関数へのベタ書きを排し，検証対象関数および検証観点に応じた独立したテスト関数（`test_<関数名>()`）へと体系的に切り分けることで，高い可読性と保守性を担保している．
+5. **Makefile によるビルド・テスト実行の自動化**:
+   - 厳格なコンパイルオプション（`-Wall -Wextra -Werror -pedantic -std=c99 -O2`）を適用した `Makefile` を整備し，`make test` コマンドにより全機能の回帰テストを一括自動実行できる再現可能な提出環境を確立している．
 
 ---
 
@@ -69,6 +73,11 @@
 
 - [`printx`](fontlib.md#printx)
 - [`printxs`](fontlib.md#printxs)
+
+#### テスト関数構成
+
+- `test_printx()`: 真値・偽値に対する `'X'` および空白の出力検証
+- `test_printxs()`: 文字列出力，空白1文字出力，NULLポインタ安全性の検証
 
 #### テスト項目と仕様書使用例との対比
 
@@ -122,6 +131,14 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 - [`load_txt`](fontlib.md#load_txt)
 - [`load_txt_to_8x8`](fontlib.md#load_txt_to_8x8)
 - [`free_memory`](fontlib.md#free_memory)
+
+#### テスト関数構成
+
+- `test_read_bits()`: ファイルからのビット列抽出および先頭バイト並びの単体検証
+- `test_pad_to_grid()`: 不足ビットのインプレースゼロパディングおよび文字数計算の単体検証
+- `test_load_txt()`: 実ファイル読み込み正常系，異常系（存在しないファイル），境界値（NULLポインタ，h=0）の検証
+- `test_load_txt_to_8x8()`: 8×8配列ポインタ展開およびビットマップ可視化の検証
+- `test_free_memory()`: 動的確保メモリの解放およびNULL解放の安全性検証
 
 #### テスト項目と仕様書使用例との対比
 
@@ -198,6 +215,12 @@ gcc -Wall -Wextra test_get_pattern.c -o test_get_pattern
 - [`pattern_scaled_size`](fontlib.md#pattern_scaled_size)
 - [`resolve_coord`](fontlib.md#resolve_coord)
 
+#### テスト関数構成
+
+- `test_rotate_coord()`: 各回転角（ROTATE_0, ROTATE_90, ROTATE_180, ROTATE_270）における座標写像およびNULL安全性の単体検証
+- `test_pattern_scaled_size()`: 非正方形パターンの回転時寸法転置，拡大スケーリング乗算，複合変換，NULL安全性の検証
+- `test_resolve_coord()`: 原点・境界対角点における各回転方向での座標逆写像，スケーリング除算逆写像，NULL安全性の検証
+
 #### テスト項目と仕様書使用例との対比
 
 | 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
@@ -272,6 +295,13 @@ gcc -Wall -Wextra test_get_coord.c -o test_get_coord
 - [`pattern_iterator_next`](fontlib.md#pattern_iterator_next)
 - [`pattern_iterator_next_h`](fontlib.md#pattern_iterator_next_h)
 
+#### テスト関数構成
+
+- `test_new_iter()`: イテレータの初期状態（出力寸法および走査座標）の検証
+- `test_pattern_iterator_next()`: 行優先走査（1文字完結型）におけるイベントシーケンスおよび完了判定の検証
+- `test_pattern_iterator_next_h()`: 水平優先走査（全文字並行型）におけるイベントシーケンスおよび完了判定の検証
+- `test_iterator_null_safety()`: NULLポインタ入力時の安全な走査停止ガード検証
+
 #### テスト項目と仕様書使用例との対比
 
 | 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
@@ -341,6 +371,13 @@ END
 - [`new_pattern_view`](fontlib.md#new_pattern_view)
 - [`new_pattern_view_doublescale`](fontlib.md#new_pattern_view_doublescale)
 - [`print_as_pattern`](fontlib.md#print_as_pattern)
+
+#### テスト関数構成
+
+- `test_new_pattern_view()`: 等倍・正立ビュー初期化パラメータの検証
+- `test_new_pattern_view_doublescale()`: 2倍拡大・正立ビュー初期化パラメータの検証
+- `test_print_as_pattern()`: 等倍および2倍拡大でのパターン描画出力の検証
+- `test_print_as_pattern_null_safety()`: NULLポインタ入力時の安全な無処理（safe no-op）検証
 
 #### テスト項目と仕様書使用例との対比
 
@@ -480,3 +517,6 @@ gcc -Wall -Wextra -O2 main.c fontlib.c -o main
    - これにより，公開インターフェース経由の間接検証だけでは見落とされがちな内部処理の境界値（データ欠損時のパディング，非正方形データでの軸反転，各回転角の原点・対角座標）を完璧に保証できた．
 3. **仕様書とテスト結果の完全なトレーサビリティ**:
    - 仕様書 `fontlib.md` の各関数仕様に記載された「最低限の使用例」と，本報告書のテストプログラム実行結果が1対1で整合しており，設計仕様に対する実装の妥当性が実証された．
+4. **テスト関数の切り分けと命名体系化による品質保証**:
+   - すべてのテストコードを `test_<対象関数名>()` の単一責任を持つテスト関数群へとリファクタリングし，`main` 関数をテストランナーとして集約した．
+   - これにより，テスト観点ごとの独立性が飛躍的に向上し，将来の回帰テストや機能拡張時における不具合の局所化・特定が極めて容易となった．
