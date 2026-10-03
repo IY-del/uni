@@ -71,7 +71,12 @@ PatternEvent pattern_iterator_next_h(PatternIterator* it, PatternStep* step);
 
 int load_txt(const char* filename, size_t h, size_t w, int** out,
              size_t* out_n);
-int load_txt_to_8x8(const char filename[], int (**out)[8][8], size_t* out_n);
+int load_txt_default(const char filename[],
+                     int (**out)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W],
+                     size_t* out_n);
+int load_txt_to_8x8(const char filename[],
+                    int (**out)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W],
+                    size_t* out_n);
 void free_memory(void* arr);
 
 #endif

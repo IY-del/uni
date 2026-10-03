@@ -230,15 +230,24 @@ int load_txt(const char* filename, size_t h, size_t w, int** out,
   return 0;
 }
 
-int load_txt_to_8x8(const char filename[], int (**out)[8][8], size_t* out_n) {
+int load_txt_default(const char filename[],
+                     int (**out)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W],
+                     size_t* out_n) {
   if (!filename || !out || !out_n) return -1;
   int* flat = NULL;
-  int ret = load_txt(filename, 8, 8, &flat, out_n);
+  int ret =
+      load_txt(filename, PATTERN_DEFAULT_H, PATTERN_DEFAULT_W, &flat, out_n);
   if (ret != 0) {
     return ret;
   }
-  *out = (int (*)[8][8])flat;
+  *out = (int (*)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W])flat;
   return 0;
+}
+
+int load_txt_to_8x8(const char filename[],
+                    int (**out)[PATTERN_DEFAULT_H][PATTERN_DEFAULT_W],
+                    size_t* out_n) {
+  return load_txt_default(filename, out, out_n);
 }
 
 void free_memory(void* arr) {
