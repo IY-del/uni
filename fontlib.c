@@ -172,12 +172,7 @@ void print_as_pattern(const PatternView* view) {
   putchar('\n');
 }
 
-int load_txt(const char* filename, size_t h, size_t w, int** out,
-             size_t* out_n) {
-  if (!filename || !out || !out_n || h == 0 || w == 0) return -1;
-  *out = NULL;
-  *out_n = 0;
-
+static int read_bits(const char* filename, int** out_buf, size_t* out_len) {
   FILE* fp = fopen(filename, "r");
   if (!fp) return -1;
 
@@ -206,12 +201,20 @@ int load_txt(const char* filename, size_t h, size_t w, int** out,
   }
   fclose(fp);
 
-  size_t cell = h * w;
+  *out_buf = buf;
+  *out_len = len;
+  return 0;
+}
+
+static int pad_to_grid(int* buf, size_t len, size_t cell, int** out,
+                       size_t* out_n) {
   size_t n = (len + cell - 1) / cell;
   size_t total = n * cell;
 
   if (total == 0) {
     free(buf);
+    *out = NULL;
+    *out_n = 0;
     return 0;
   }
 
@@ -228,6 +231,22 @@ int load_txt(const char* filename, size_t h, size_t w, int** out,
   *out = res;
   *out_n = n;
   return 0;
+}
+
+int load_txt(const char* filename, size_t h, size_t w, int** out,
+             size_t* out_n) {
+  if (!filename || !out || !out_n || h == 0 || w == 0) return -1;
+  *out = NULL;
+  *out_n = 0;
+
+  int* raw = NULL;
+  size_t len = 0;
+  int ret = read_bits(filename, &raw, &len);
+  if (ret != 0) {
+    return ret;
+  }
+
+  return pad_to_grid(raw, len, h * w, out, out_n);
 }
 
 int load_txt_to_8x8(const char filename[], int (**out)[8][8], size_t* out_n) {
