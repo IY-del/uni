@@ -117,6 +117,8 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 
 #### 対象関数
 
+- [`read_bits` (static)](fontlib.md#read_bits-static)
+- [`pad_to_grid` (static)](fontlib.md#pad_to_grid-static)
 - [`load_txt`](fontlib.md#load_txt)
 - [`load_txt_to_8x8`](fontlib.md#load_txt_to_8x8)
 - [`free_memory`](fontlib.md#free_memory)
@@ -125,6 +127,8 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 
 | 関数 | 入力値・検証内容 | 期待値 | 仕様書との対比・検証観点 |
 | :--- | :--- | :--- | :--- |
+| `read_bits` | `"font_data01.txt"` | `ret=0, len=1663` | 【内部関数単体検証】ファイルからの純粋なビット列抽出と要素数確認 |
+| `pad_to_grid` | `bits, len=1663, cell=64` | `ret=0, n=26` | 【内部関数単体検証】境界不足分（1ビット）のインプレースゼロパディング確認 |
 | `load_txt` | `"font_data01.txt", h=8, w=8` | `ret=0, n=26` | 【仕様書使用例】実ファイルからの動的確保と文字数取得の確認 |
 | `load_txt` | 先頭文字の先頭行参照 | `00011000` | 【ビット正確性】抽出ビット列が元データ通り正確に配列化されていることの確認 |
 | `load_txt` | `"non_existent.txt"` | `ret=-1` | 【異常系】存在しないファイル指定時の安全なエラー返却確認 |
@@ -137,7 +141,8 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 #### コンパイルおよび実行コマンド
 
 ```sh
-gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
+# static 関数の直接単体テストを含むため test_get_pattern.c を直接コンパイル
+gcc -Wall -Wextra test_get_pattern.c -o test_get_pattern
 ./test_get_pattern
 ```
 
@@ -145,9 +150,15 @@ gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
 
 ```text
 === 2. パターン読み込み・メモリ管理機能 ===
+[read_bits (static)]
+  read_bits("font_data01.txt"): ret=0, len=1663 (expected: ret=0, len=1663)
+  first 8 bits: 00011000 (expected: 00011000)
+
+[pad_to_grid (static)]
+  pad_to_grid(..., len=1663, cell=64): ret=0, n=26 (expected: ret=0, n=26)
+
 [load_txt]
   load_txt("font_data01.txt", 8, 8): ret=0, n=26 (expected: ret=0, n=26)
-  first letter top row: 00011000 (expected: 00011000)
   load_txt("non_existent.txt"): ret=-1 (expected: -1)
   load_txt(NULL, ...): ret=-1 (expected: -1)
   load_txt(..., h=0, ...): ret=-1 (expected: -1)
@@ -171,11 +182,11 @@ gcc -Wall -Wextra test_get_pattern.c fontlib.c -o test_get_pattern
 
 #### 考察
 
-1. **`load_txt` の最適化（realloc によるインプレースパディング）の証明**:
-   - 以前の実装に存在した「一時バッファ確保 → `calloc` による新配列確保 → `for` ループによる全件コピー → 一時バッファ解放」という冗長な二重確保・全件コピーを完全に撤廃し，読み込み完了後に `realloc` で必要要素数 $n \times (h \times w)$ へリサイズし末尾不足分のみ `memset` でゼロクリアする方式へと最適化した．
-   - 実行結果より，読み込み文字数が `n = 26`，先頭文字の最上行ビットが `00011000` と正確に読み込まれており，簡素化後もデータの欠損や化けが一切生じていないことが実証された．
-2. **境界値・異常系の防護性**:
-   - NULLポインタや `h=0` 等の不正入力に対して即座に `-1` を返し，ゼロ除算（SIGFPE）やセグメンテーション違反を未然に防止できる堅牢性が実機実行により確認された．
+1. **責務分離（`read_bits` と `pad_to_grid`）の妥当性とパディング機能の直接証明**:
+   - `load_txt` を「ファイル入力・ビット抽出を担う `read_bits`」と「グリッド計算・パディングを担う `pad_to_grid`」の2段階に責務分割した．
+   - 実データ `font_data01.txt` の総ビット数（1663ビット）は $26 \times 64 = 1664$ に対して1ビット不足しているが，`pad_to_grid` により文字数 $n=26$ が正しく切り上げ計算され，末尾の1ビット分がゼロパディングされて 1664 要素の完全な配列へとインプレースリサイズされたことが単体テストによって直接実証された．
+2. **保守性とテスト容易性の両立**:
+   - `static` 関数として内部局所化しつつも，テストコードから直接呼び出して個別に検証できる体制を確立したことで，I/Oエラーとメモリパディングエラーの切り分けが極めて明快となった．
 
 ---
 
@@ -461,10 +472,11 @@ gcc -Wall -Wextra -O2 main.c fontlib.c -o main
 
 本報告書の検証作業を通じて，以下の成果およびソフトウェア品質の保証が確認された．
 
-1. **`load_txt` のリファクタリングによる保守性と実行効率の向上**:
-   - 従来の二重配列確保および全件コピー処理を `realloc` によるインプレースリサイズと終端ゼロクリアへ再設計したことで，コード行数を大幅に削減し，メモリ断片化およびアロケーションのオーバーヘッドを劇的に改善した．
+1. **`load_txt` のモジュール分割（`read_bits` / `pad_to_grid`）による保守性と実行効率の向上**:
+   - ファイルI/Oによるビット列抽出処理（`read_bits`）と，幾何グリッド計算に基づくパディング処理（`pad_to_grid`）へ責任を二分割した．
+   - これにより関数の構造が極めて明快となり，従来の二重配列確保・全件コピーを排除したインプレースリサイズ（`realloc`）によって高いメモリ効率と保守性を両立した．
 2. **static 関数を含む徹底した単体テスト容易性**:
-   - モジュールのカプセル化（情報隠蔽）を維持しつつ，C言語のソースインクルード手法を用いることで，内部関数 `rotate_coord` を直接単体テスト対象として網羅した．
-   - これにより，公開インターフェース経由の間接検証だけでは見落とされがちな内部座標写像の境界値（非正方形データでの軸反転，各回転角の原点・対角座標）を完璧に保証できた．
+   - モジュールのカプセル化（情報隠蔽）を維持しつつ，C言語のソースインクルード手法を用いることで，内部関数 `read_bits`, `pad_to_grid`, `rotate_coord` を直接単体テスト対象として網羅した．
+   - これにより，公開インターフェース経由の間接検証だけでは見落とされがちな内部処理の境界値（データ欠損時のパディング，非正方形データでの軸反転，各回転角の原点・対角座標）を完璧に保証できた．
 3. **仕様書とテスト結果の完全なトレーサビリティ**:
    - 仕様書 `fontlib.md` の各関数仕様に記載された「最低限の使用例」と，本報告書のテストプログラム実行結果が1対1で整合しており，設計仕様に対する実装の妥当性が実証された．
