@@ -665,10 +665,10 @@ typedef struct {
 各機能のテスト項目，境界値検証，および統合プログラムの実行結果については，別冊の [パターン印刷プログラム 実行結果報告書](report.md) に集約している．
 
 - **テストプログラムの検証結果**:
-   - [基本表示機能のテスト (`test_fontlib.c`)](report.md#21-基本表示機能の検証-test_fontlibc)
-   - [パターン読み込み・メモリ管理機能のテスト (`test_get_pattern.c`)](report.md#22-パターン読み込みメモリ管理機能の検証-test_get_patternc)
-   - [座標変換・サイズ計算機能のテスト (`test_get_coord.c`)](report.md#23-座標変換サイズ計算機能の検証-test_get_coordc)
+   - [基本表示機能のテスト (`test_display.c`)](report.md#21-基本表示機能の検証-test_displayc)
+   - [パターン読み込み・メモリ管理機能のテスト (`test_load.c`)](report.md#22-パターン読み込みメモリ管理機能の検証-test_loadc)
+   - [座標変換・サイズ計算機能のテスト (`test_coord.c`)](report.md#23-座標変換サイズ計算機能の検証-test_coordc)
    - [パターン走査機能のテスト (`test_iterator.c`)](report.md#24-パターン走査機能の検証-test_iteratorc)
-   - [パターン描画制御機能のテスト (`test_print_pattern.c`)](report.md#25-パターン描画制御機能の検証-test_print_patternc)
+   - [パターン描画制御機能のテスト (`test_view.c`)](report.md#25-パターン描画制御機能の検証-test_viewc)
 - **統合実行プログラム結果**:
    - [実データによる統合描画プログラム (`main.c`)](report.md#3-統合実行プログラム-mainc-の検証結果)

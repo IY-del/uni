@@ -8,19 +8,19 @@
 
 - [1. 報告概要](#1-報告概要)
 - [2. 機能別テストプログラムの実行結果](#2-機能別テストプログラムの実行結果)
-   - [2.1. 基本表示機能の検証 (`test_fontlib.c`)](#21-基本表示機能の検証-test_fontlibc)
+   - [2.1. 基本表示機能の検証 (`test_display.c`)](#21-基本表示機能の検証-test_displayc)
       - [対象関数](#対象関数)
       - [テスト項目と仕様書使用例との対比](#テスト項目と仕様書使用例との対比)
       - [コンパイルおよび実行コマンド](#コンパイルおよび実行コマンド)
       - [実行結果](#実行結果)
       - [考察](#考察)
-   - [2.2. パターン読み込み・メモリ管理機能の検証 (`test_get_pattern.c`)](#22-パターン読み込みメモリ管理機能の検証-test_get_patternc)
+   - [2.2. パターン読み込み・メモリ管理機能の検証 (`test_load.c`)](#22-パターン読み込みメモリ管理機能の検証-test_loadc)
       - [対象関数](#対象関数-1)
       - [テスト項目と仕様書使用例との対比](#テスト項目と仕様書使用例との対比-1)
       - [コンパイルおよび実行コマンド](#コンパイルおよび実行コマンド-1)
       - [実行結果](#実行結果-1)
       - [考察](#考察-1)
-   - [2.3. 座標変換・サイズ計算機能の検証 (`test_get_coord.c`)](#23-座標変換サイズ計算機能の検証-test_get_coordc)
+   - [2.3. 座標変換・サイズ計算機能の検証 (`test_coord.c`)](#23-座標変換サイズ計算機能の検証-test_coordc)
       - [対象関数](#対象関数-2)
       - [テスト項目と仕様書使用例との対比](#テスト項目と仕様書使用例との対比-2)
       - [コンパイルおよび実行コマンド](#コンパイルおよび実行コマンド-2)
@@ -32,7 +32,7 @@
       - [コンパイルおよび実行コマンド](#コンパイルおよび実行コマンド-3)
       - [実行結果（抜粋）](#実行結果抜粋)
       - [考察](#考察-3)
-   - [2.5. パターン描画制御機能の検証 (`test_print_pattern.c`)](#25-パターン描画制御機能の検証-test_print_patternc)
+   - [2.5. パターン描画制御機能の検証 (`test_view.c`)](#25-パターン描画制御機能の検証-test_viewc)
       - [対象関数](#対象関数-4)
       - [テスト項目と仕様書使用例との対比](#テスト項目と仕様書使用例との対比-4)
       - [コンパイルおよび実行コマンド](#コンパイルおよび実行コマンド-4)
@@ -67,7 +67,7 @@
 
 ## 2. 機能別テストプログラムの実行結果
 
-### 2.1. 基本表示機能の検証 (`test_fontlib.c`)
+### 2.1. 基本表示機能の検証 (`test_display.c`)
 
 #### 対象関数
 
@@ -93,8 +93,8 @@
 #### コンパイルおよび実行コマンド
 
 ```sh
-gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
-./test_fontlib
+gcc -Wall -Wextra test_display.c fontlib.c -o test_display
+./test_display
 ```
 
 #### 実行結果
@@ -122,7 +122,7 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 
 ---
 
-### 2.2. パターン読み込み・メモリ管理機能の検証 (`test_get_pattern.c`)
+### 2.2. パターン読み込み・メモリ管理機能の検証 (`test_load.c`)
 
 #### 対象関数
 
@@ -158,9 +158,9 @@ gcc -Wall -Wextra test_fontlib.c fontlib.c -o test_fontlib
 #### コンパイルおよび実行コマンド
 
 ```sh
-# static 関数の直接単体テストを含むため test_get_pattern.c を直接コンパイル
-gcc -Wall -Wextra test_get_pattern.c -o test_get_pattern
-./test_get_pattern
+# static 関数の直接単体テストを含むため test_load.c を直接コンパイル
+gcc -Wall -Wextra test_load.c -o test_load
+./test_load
 ```
 
 #### 実行結果
@@ -207,7 +207,7 @@ gcc -Wall -Wextra test_get_pattern.c -o test_get_pattern
 
 ---
 
-### 2.3. 座標変換・サイズ計算機能の検証 (`test_get_coord.c`)
+### 2.3. 座標変換・サイズ計算機能の検証 (`test_coord.c`)
 
 #### 対象関数
 
@@ -237,9 +237,9 @@ gcc -Wall -Wextra test_get_pattern.c -o test_get_pattern
 #### コンパイルおよび実行コマンド
 
 ```sh
-# static 関数の直接単体テストを含むため test_get_coord.c を直接コンパイル
-gcc -Wall -Wextra test_get_coord.c -o test_get_coord
-./test_get_coord
+# static 関数の直接単体テストを含むため test_coord.c を直接コンパイル
+gcc -Wall -Wextra test_coord.c -o test_coord
+./test_coord
 ```
 
 #### 実行結果
@@ -364,7 +364,7 @@ END
 
 ---
 
-### 2.5. パターン描画制御機能の検証 (`test_print_pattern.c`)
+### 2.5. パターン描画制御機能の検証 (`test_view.c`)
 
 #### 対象関数
 
@@ -392,8 +392,8 @@ END
 #### コンパイルおよび実行コマンド
 
 ```sh
-gcc -Wall -Wextra test_print_pattern.c fontlib.c -o test_print_pattern
-./test_print_pattern
+gcc -Wall -Wextra test_view.c fontlib.c -o test_view
+./test_view
 ```
 
 #### 実行結果
