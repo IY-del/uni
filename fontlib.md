@@ -568,7 +568,7 @@ typedef struct {
   PatternIterator it = new_iter(&view);
   PatternStep step;
   if (pattern_iterator_next_h(&it, &step) == PATTERN_EVENT_CELL) {
-    printf("h_ch=%zu, src=(%zu,%zu)\n", step.ch, step.src_y, step.src_y);
+    printf("h_ch=%zu, src=(%zu,%zu)\n", step.ch, step.src_x, step.src_y);
   }
    ```
 
