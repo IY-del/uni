@@ -1,0 +1,429 @@
+:root {
+  --neon-pink: #ff007f;
+  --neon-cyan: #00f3ff;
+  --neon-yellow: #ffe600;
+  --neon-green: #39ff14;
+  --bg-dark: #070014;
+  --text-white: #ffffff;
+  --rainbow-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: "Impact", "Arial Black", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+body[data-shake="active"] {
+  animation: screen-shake 0.15s ease-in-out infinite;
+}
+
+@keyframes screen-shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-4px, 4px) rotate(-1deg); }
+  40% { transform: translate(4px, -4px) rotate(1deg); }
+  60% { transform: translate(-4px, -4px) rotate(-0.5deg); }
+  80% { transform: translate(4px, 4px) rotate(0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* 上部マーキーティッカー */
+.dopa-ticker {
+  background: #000;
+  border-bottom: 3px solid var(--neon-pink);
+  padding: 8px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 0 15px var(--neon-pink);
+}
+
+.ticker-track {
+  display: inline-block;
+  animation: ticker-slide 12s linear infinite;
+}
+
+.ticker-content {
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  font-weight: 900;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px var(--neon-yellow);
+  letter-spacing: 2px;
+}
+
+@keyframes ticker-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* メインビューポート（ドパガキ定番の上下スプリット構成） */
+.dopa-viewport {
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto minmax(280px, 360px);
+  gap: 12px;
+  padding: 12px;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  z-index: 10;
+}
+
+/* 上段：おみくじ結果 ＆ 脳汁スロット */
+.omikuji-display {
+  background: radial-gradient(circle at center, rgba(40, 0, 80, 0.9), rgba(5, 0, 20, 0.95));
+  border: 4px solid var(--neon-cyan);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 0 25px var(--neon-cyan), inset 0 0 20px rgba(0, 243, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: neon-border-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes neon-border-pulse {
+  from {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 20px var(--neon-pink), inset 0 0 15px rgba(255, 0, 127, 0.4);
+  }
+  to {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 35px var(--neon-cyan), inset 0 0 25px rgba(0, 243, 255, 0.6);
+  }
+}
+
+.display-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.warning-badge {
+  background: var(--neon-pink);
+  color: #fff;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  animation: badge-blink 0.6s infinite alternate;
+}
+
+@keyframes badge-blink {
+  0% { opacity: 0.3; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+.sub-headline {
+  font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+  background: var(--rainbow-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow-flow 3s linear infinite;
+  background-size: 200% auto;
+}
+
+@keyframes rainbow-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.fortune-core {
+  background: rgba(0, 0, 0, 0.6);
+  border: 3px dashed var(--neon-yellow);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fortune-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.fortune-label {
+  font-size: 0.85rem;
+  color: var(--neon-cyan);
+  letter-spacing: 3px;
+}
+
+.fortune-result {
+  font-size: clamp(3.2rem, 12vw, 5.5rem);
+  font-weight: 900;
+  color: var(--neon-yellow);
+  text-shadow:
+    0 0 10px #ff0,
+    0 0 20px #ff7f00,
+    0 0 40px #ff007f;
+  line-height: 1.1;
+  display: inline-block;
+  animation: boom-text 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes boom-text {
+  0% { transform: scale(1) rotate(-1deg); }
+  100% { transform: scale(1.08) rotate(1deg); }
+}
+
+.fortune-comment {
+  font-size: clamp(0.95rem, 3vw, 1.25rem);
+  color: #fff;
+  font-weight: bold;
+  background: rgba(255, 0, 127, 0.4);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--neon-yellow);
+  border-right: 4px solid var(--neon-yellow);
+  margin-top: 6px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+/* 脳汁メーター＆アクションボタングループ */
+.dopamine-counter-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.meter-label {
+  font-size: 0.8rem;
+  color: var(--neon-green);
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+.dopa-meter {
+  width: 100%;
+  height: 22px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px var(--neon-green);
+}
+
+.dopa-meter::-webkit-meter-bar {
+  background: #111;
+  border: 2px solid var(--neon-green);
+  border-radius: 8px;
+}
+
+.dopa-meter::-webkit-meter-optimum-value {
+  background: var(--rainbow-gradient);
+}
+
+.dopa-value {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 900;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green);
+  letter-spacing: 2px;
+}
+
+.action-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.rush-button {
+  background: var(--rainbow-gradient);
+  background-size: 300% 300%;
+  color: #000;
+  border: 3px solid #fff;
+  border-radius: 50px;
+  padding: 12px 14px;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--neon-yellow), inset 0 0 10px #fff;
+  transition: transform 0.05s ease, filter 0.05s ease;
+  animation: gradient-btn 2s ease infinite;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.rush-button:active {
+  transform: scale(0.92);
+  filter: brightness(1.4);
+}
+
+/* 引き直し（リロール）ボタン */
+.reroll-link {
+  background: radial-gradient(circle, #ff007f 0%, #7b003c 100%);
+  color: #fff;
+  text-decoration: none;
+  border: 3px solid var(--neon-cyan);
+  border-radius: 50px;
+  padding: 12px 14px;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--neon-pink), inset 0 0 12px rgba(0, 243, 255, 0.6);
+  transition: transform 0.05s ease, filter 0.05s ease;
+  animation: reroll-pulse 1s ease-in-out infinite alternate;
+}
+
+.reroll-link:active {
+  transform: scale(0.92);
+  filter: brightness(1.5);
+}
+
+@keyframes reroll-pulse {
+  from {
+    box-shadow: 0 0 15px var(--neon-pink), inset 0 0 8px rgba(0, 243, 255, 0.4);
+    transform: scale(1);
+  }
+  to {
+    box-shadow: 0 0 25px var(--neon-cyan), inset 0 0 15px rgba(255, 0, 127, 0.8);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes gradient-btn {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 下段：ドパガキ用 Subway Surfers 風パルクール無限ループ画面 */
+.distraction-view {
+  background: #000;
+  border: 4px solid var(--neon-green);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px var(--neon-green);
+  position: relative;
+}
+
+.distraction-header {
+  background: rgba(57, 255, 20, 0.2);
+  padding: 6px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--neon-green);
+  border-bottom: 2px solid var(--neon-green);
+  font-weight: bold;
+}
+
+.canvas-wrap {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.runner-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 操作用ボタングループ */
+.runner-controls {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  border-top: 2px solid var(--neon-green);
+}
+
+.ctrl-btn {
+  background: #111;
+  color: var(--neon-cyan);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 8px;
+  padding: 8px 4px;
+  font-size: clamp(0.75rem, 2.2vw, 0.95rem);
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.05s ease, background 0.05s ease;
+}
+
+.ctrl-btn:active {
+  transform: scale(0.92);
+  background: var(--neon-cyan);
+  color: #000;
+}
+
+.ctrl-jump {
+  color: var(--neon-yellow);
+  border-color: var(--neon-yellow);
+}
+
+.ctrl-jump:active {
+  background: var(--neon-yellow);
+  color: #000;
+}
+
+/* 背景パーティクル Canvas */
+.celebration-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* 浮遊ポップアップ文字 */
+.floating-text {
+  position: fixed;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 10px #ff0, 0 0 20px #ff007f;
+  pointer-events: none;
+  z-index: 1000;
+  animation: float-up-fade 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes float-up-fade {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.6) rotate(var(--rot, 0deg));
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1.3) rotate(var(--rot, 0deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(1.6) rotate(var(--rot, 0deg));
+  }
+}
