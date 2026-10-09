@@ -650,12 +650,12 @@ typedef struct {
    出力例:
 
    ```text
-   XXXX
-   XXXX
-      XXXX
-      XXXX
-   XXXX
-   XXXX
+    XXXX
+    XXXX
+       XXXX
+       XXXX
+    XXXX
+    XXXX
 
 
    ```
@@ -670,18 +670,18 @@ typedef struct {
    出力例:
 
    ```text
-    XXXXXXXX
-    XXXXXXXX
-    XXXXXXXX
-    XXXXXXXX
-          XXXXXXXX
-          XXXXXXXX
-          XXXXXXXX
-          XXXXXXXX
-    XXXXXXXX
-    XXXXXXXX
-    XXXXXXXX
-    XXXXXXXX
+     XXXXXXXX
+     XXXXXXXX
+     XXXXXXXX
+     XXXXXXXX
+           XXXXXXXX
+           XXXXXXXX
+           XXXXXXXX
+           XXXXXXXX
+     XXXXXXXX
+     XXXXXXXX
+     XXXXXXXX
+     XXXXXXXX
 
 
 
@@ -707,13 +707,13 @@ typedef struct {
    出力例（ROTATE_0: 正立）:
 
    ```text
-    XX
-    XX
-    XX
-  XXXXXX
-  XX  XX
-  XX  XX
-  XX  XX
+     XX
+     XX
+     XX
+   XXXXXX
+   XX  XX
+   XX  XX
+   XX  XX
 
    ```
 
@@ -721,13 +721,13 @@ typedef struct {
 
    ```text
 
-  XX  XX
-  XX  XX
-  XX  XX
-  XXXXXX
-    XX
-    XX
-    XX
+     XX  XX
+     XX  XX
+     XX  XX
+     XXXXXX
+       XX
+       XX
+       XX
    ```
 
    出力例（ROTATE_270: 反時計回り90度回転）:
@@ -735,12 +735,12 @@ typedef struct {
    ```text
 
 
-     XXXX
-     XXXX
-  XXXX
-  XXXX
-     XXXX
-     XXXX
+      XXXX
+      XXXX
+   XXXX
+   XXXX
+      XXXX
+      XXXX
    ```
 
    **使用例4: 描画文字の変更（view.string）**
@@ -754,12 +754,12 @@ typedef struct {
    出力例:
 
    ```text
-   ########
-   ########
-      ########
-      ########
-   ########
-   ########
+    ########
+    ########
+       ########
+       ########
+    ########
+    ########
 
 
    ```
