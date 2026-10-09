@@ -1,12 +1,8 @@
-const num = Math.floor(Math.random() * 6 + 1);
+const LEVELS = ['大吉', '中吉', '小吉', '末吉', '凶', '大凶'];
 
-const levels = {
-    1: '大吉',
-    2: '中吉',
-    3: '小吉',
-    4: '末吉',
-    5: '凶',
-    6: '大凶'
-};
+function getOmikuji() {
+    const index = Math.floor(Math.random() * LEVELS.length);
+    return LEVELS[index];
+}
 
-console.log('あなたの運勢は' + levels[num] + 'です');
+module.exports = getOmikuji;
