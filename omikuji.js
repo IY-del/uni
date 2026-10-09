@@ -1,7 +1,5 @@
 const num = Math.floor(Math.random() * 6 + 1);
 
-let luck = '';
-
 const levels = {
     1: '大吉',
     2: '中吉',
