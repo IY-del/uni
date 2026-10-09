@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚨 脳汁MAX ドパガキおみくじ 🚨</title>
+  <link rel="stylesheet" href="/public/omikuji3.css">
+  <script src="/public/omikuji3.js" defer></script>
+</head>
+
+<body data-state="ready" data-shake="idle">
+  <!-- 電光掲示板風テロップ -->
+  <header class="dopa-ticker">
+    <aside class="ticker-track">
+      <span class="ticker-content">🚨 脳汁警報発令中 🚨 ドーパミン過剰分泌注意 🚨 スワイプ禁止 🚨 今日の運勢確定演出 🚨 脳汁ドバドバ大放出 🚨 チャンネル登録高評価 🚨 脳死周回推奨 🚨</span>
+      <span class="ticker-content">🚨 脳汁警報発令中 🚨 ドーパミン過剰分泌注意 🚨 スワイプ禁止 🚨 今日の運勢確定演出 🚨 脳汁ドバドバ大放出 🚨 チャンネル登録高評価 🚨 脳死周回推奨 🚨</span>
+    </aside>
+  </header>
+
+  <main class="dopa-viewport">
+    <!-- 上段：おみくじ結果表示 ＆ 脳汁フィーバー -->
+    <section class="omikuji-display" data-luck="<%= result %>">
+      <header class="display-header">
+        <span class="warning-badge">⚠️ SHORT-FORM BRAINROT EDITION ⚠️</span>
+        <h2 class="sub-headline">💥 脳汁確定おみくじスロット 💥</h2>
+      </header>
+
+      <article class="fortune-core">
+        <figure class="fortune-visual">
+          <span class="fortune-label">▼ TODAY'S DOPAMINE FORTUNE ▼</span>
+          <strong class="fortune-result"><%= result %></strong>
+          <figcaption class="fortune-comment"><%= comment %></figcaption>
+        </figure>
+      </article>
+
+      <section class="dopamine-counter-section">
+        <label for="dopa-meter" class="meter-label">脳汁分泌メーター (DOPAMINE LEVEL)</label>
+        <meter id="dopa-meter" class="dopa-meter" min="0" max="1000" value="999"></meter>
+        <output class="dopa-value" data-target="score">999,999,999</output>
+        <nav class="action-button-group">
+          <button type="button" class="rush-button" data-trigger="boost">
+            🔥 脳汁連打タップ 🔥
+          </button>
+          <a href="/omikuji3" class="reroll-link" data-action="reroll" role="button">
+            🔄 脳死リロール（再抽選）
+          </a>
+        </nav>
+      </section>
+    </section>
+
+    <!-- 下段：操作可能 Subway Surfers 風パルクール -->
+    <section class="distraction-view">
+      <header class="distraction-header">
+        <p>🎮 操作可能！サブウェイ風パルクール (A/D/Space or タップ) 🎮</p>
+      </header>
+      <figure class="canvas-wrap">
+        <canvas class="runner-canvas" width="400" height="240"></canvas>
+      </figure>
+      <nav class="runner-controls" aria-label="パルクール操作">
+        <button type="button" class="ctrl-btn" data-control="left">◀ 左 (A)</button>
+        <button type="button" class="ctrl-btn ctrl-jump" data-control="jump">▲ JUMP (Space)</button>
+        <button type="button" class="ctrl-btn" data-control="right">右 (D) ▶</button>
+      </nav>
+    </section>
+  </main>
+
+  <!-- 紙吹雪・コイン・パーティクル描画キャンバス -->
+  <canvas class="celebration-particles"></canvas>
+
+  <!-- 浮遊テキスト用テンプレート -->
+  <template class="pop-dopa-template">
+    <span class="floating-text"></span>
+  </template>
+</body>
+
+</html>
