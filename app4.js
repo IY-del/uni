@@ -31,4 +31,16 @@ app.get("/omikuji2", (req, res) => {
   res.render('omikuji2', { result: luck });
 });
 
+app.get("/english", (req, res) => {
+  res.render('greeting', { message: 'Good Morning\n' });
+});
+
+app.get("/french", (req, res) => {
+  res.render('greeting', { message: 'Bonjour\n' });
+});
+
+app.get("/german", (req, res) => {
+  res.render('greeting', { message: 'Guten Morgen\n' });
+});
+
 app.listen(8080, () => console.log("Example app listening on port 8080!"));
