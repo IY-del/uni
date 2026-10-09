@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>趣味 | ドパガキ＆ギャップ</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <header>
+        <h1>HOBBIES</h1>
+        <p>脳汁刺激＆まさかのギャップ趣味</p>
+    </header>
+
+    <main>
+        <!-- 意外な本気の趣味 -->
+        <section>
+            <h2>📚 真の趣味: 歴史小説の読破</h2>
+            <p>「ドパガキなのに活字？」と見せかけて、<strong>歴史の激動と計略による圧倒的脳汁</strong>を味わえる歴史小説を愛読。</p>
+            <p style="color: var(--neon-cyan); font-size: 0.9rem;">※ 1000ページの長編でも、熱い展開の瞬間はドーパミン最大分泌。</p>
+        </section>
+
+        <!-- ガチャシミュレーター -->
+        <section>
+            <h2>🎰 1連ドパガキガチャ</h2>
+            <p>刺激が足りない時は即ガチャを回して脳汁をチャージ。</p>
+            <button type="button" data-action="gacha">⚡️ ガチャを回す (PULL!)</button>
+            <p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-sub);">排出ログ:</p>
+            <div class="log-box"></div>
+        </section>
+
+        <nav>
+            <section>
+                <ul>
+                    <li>
+                        <a href="./index.html">
+                            <span>🔙 ドパガキステーションへ戻る</span>
+                            <span class="badge">EXIT</span>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </nav>
+    </main>
+
+    <!-- ガチャログ用テンプレート -->
+    <template data-type="log-entry">
+        <div class="log-entry"></div>
+    </template>
+
+    <script src="./main.js"></script>
+</body>
+
+</html>

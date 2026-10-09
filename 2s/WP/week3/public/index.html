@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡️ ドパガキ・ステーション ⚡️</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <aside class="effect-layer" aria-hidden="true"></aside>
+
+    <header>
+        <h1>DOPAGAKI⚡️HUB</h1>
+        <p>脳死タップ推奨 // タイパ至上主義ポータル</p>
+    </header>
+
+    <main data-rush="idle">
+        <!-- ドーパミン注入レバー -->
+        <section>
+            <h2>🧠 脳汁プッシャー</h2>
+            <p>押すだけで脳内ドーパミン即時分泌。考えたら負け。</p>
+            <div class="meter-track">
+                <div class="meter-fill"></div>
+            </div>
+            <p>現在の分泌量: <strong data-role="score-display" style="color: var(--neon-green);">0</strong> <span class="badge">DOPA</span></p>
+            <button type="button" data-action="inject">⚡️ 脳汁をキメる (TAP!)</button>
+        </section>
+
+        <!-- 3秒ナビゲーション -->
+        <nav>
+            <section>
+                <h2>⚡️ タイパ重視メニュー (読了目安: 2秒)</h2>
+                <ul>
+                    <li>
+                        <a href="./intro.html">
+                            <span>😎 結論ファースト自己紹介</span>
+                            <span class="badge">3秒</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="./hobby.html">
+                            <span>🎰 刺激MAXな趣味一覧</span>
+                            <span class="badge">ガチャ有</span>
+                        </a>
+                    </li>
+                </ul>
+            </section>
+        </nav>
+
+        <!-- ドパガキスペック -->
+        <article>
+            <h2>📊 本日の生体ステータス</h2>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">集中力持続時間</span>
+                    <div class="stat-val">約 12 秒</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">動画再生速度</span>
+                    <div class="stat-val">2.5 倍速</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">スワイプ速度</span>
+                    <div class="stat-val">秒速 5 回</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">長文への耐性</span>
+                    <div class="stat-val">0 % (即離脱)</div>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <!-- 動的パーティクル用テンプレート -->
+    <template data-type="particle">
+        <span class="floating-text"></span>
+    </template>
+
+    <script src="./main.js"></script>
+</body>
+
+</html>
