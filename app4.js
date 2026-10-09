@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require('path');
-const getOmikuji = require('./omikuji');
+const { getOmikuji, getComment } = require('./omikuji');
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -29,6 +29,12 @@ app.get("/omikuji1", (req, res) => {
 app.get("/omikuji2", (req, res) => {
   const luck = getOmikuji();
   res.render('omikuji2', { result: luck });
+});
+
+app.get("/omikuji3", (req, res) => {
+  const luck = getOmikuji();
+  const comment = getComment(luck);
+  res.render('omikuji3', { result: luck, comment: comment });
 });
 
 app.get("/english", (req, res) => {
