@@ -2,11 +2,11 @@
   "name": "node-http-server",
   "version": "1.0.0",
   "description": "Node.js example server starter project",
-  "main": "src/index.js",
+  "main": "app4.js",
   "type": "commonjs",
   "scripts": {
     "start": "node app4.js",
-    "dr": "deno run --allow-net --allow-read --allow-env src/index.js"
+    "dr": "deno run --allow-net --allow-read --allow-env app4.js"
   },
   "dependencies": {
     "express": "^5.2.1"
