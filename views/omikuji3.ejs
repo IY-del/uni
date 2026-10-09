@@ -2,13 +2,784 @@
 <html lang="ja">
 
 <head>
-    <meta charset="UTF-8">
-    <title>おみくじ</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚨 脳汁MAX ドパガキおみくじ 🚨</title>
+  <style>
+    :root {
+      --neon-pink: #ff007f;
+      --neon-cyan: #00f3ff;
+      --neon-yellow: #ffe600;
+      --neon-green: #39ff14;
+      --bg-dark: #070014;
+      --text-white: #ffffff;
+      --rainbow-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: "Impact", "Arial Black", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    body[data-shake="active"] {
+      animation: screen-shake 0.15s ease-in-out infinite;
+    }
+
+    @keyframes screen-shake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 4px) rotate(-1deg); }
+      40% { transform: translate(4px, -4px) rotate(1deg); }
+      60% { transform: translate(-4px, -4px) rotate(-0.5deg); }
+      80% { transform: translate(4px, 4px) rotate(0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    /* 上部マーキーティッカー */
+    .dopa-ticker {
+      background: #000;
+      border-bottom: 3px solid var(--neon-pink);
+      padding: 8px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 0 15px var(--neon-pink);
+    }
+
+    .ticker-track {
+      display: inline-block;
+      animation: ticker-slide 12s linear infinite;
+    }
+
+    .ticker-content {
+      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+      font-weight: 900;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 8px var(--neon-yellow);
+      letter-spacing: 2px;
+    }
+
+    @keyframes ticker-slide {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* メインビューポート（ドパガキ定番の上下スプリット構成） */
+    .dopa-viewport {
+      flex: 1;
+      display: grid;
+      grid-template-rows: auto minmax(240px, 320px);
+      gap: 12px;
+      padding: 12px;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      z-index: 10;
+    }
+
+    /* 上段：おみくじ結果 ＆ 脳汁スロット */
+    .omikuji-display {
+      background: radial-gradient(circle at center, rgba(40, 0, 80, 0.9), rgba(5, 0, 20, 0.95));
+      border: 4px solid var(--neon-cyan);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 0 25px var(--neon-cyan), inset 0 0 20px rgba(0, 243, 255, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: neon-border-pulse 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes neon-border-pulse {
+      from {
+        border-color: var(--neon-pink);
+        box-shadow: 0 0 20px var(--neon-pink), inset 0 0 15px rgba(255, 0, 127, 0.4);
+      }
+      to {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 35px var(--neon-cyan), inset 0 0 25px rgba(0, 243, 255, 0.6);
+      }
+    }
+
+    .display-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .warning-badge {
+      background: var(--neon-pink);
+      color: #fff;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      animation: badge-blink 0.6s infinite alternate;
+    }
+
+    @keyframes badge-blink {
+      0% { opacity: 0.3; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .sub-headline {
+      font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+      background: var(--rainbow-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow-flow 3s linear infinite;
+      background-size: 200% auto;
+    }
+
+    @keyframes rainbow-flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .fortune-core {
+      background: rgba(0, 0, 0, 0.6);
+      border: 3px dashed var(--neon-yellow);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .fortune-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fortune-label {
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+      letter-spacing: 3px;
+    }
+
+    .fortune-result {
+      font-size: clamp(3.2rem, 12vw, 5.5rem);
+      font-weight: 900;
+      color: var(--neon-yellow);
+      text-shadow:
+        0 0 10px #ff0,
+        0 0 20px #ff7f00,
+        0 0 40px #ff007f;
+      line-height: 1.1;
+      display: inline-block;
+      animation: boom-text 0.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes boom-text {
+      0% { transform: scale(1) rotate(-1deg); }
+      100% { transform: scale(1.08) rotate(1deg); }
+    }
+
+    .fortune-comment {
+      font-size: clamp(0.95rem, 3vw, 1.25rem);
+      color: #fff;
+      font-weight: bold;
+      background: rgba(255, 0, 127, 0.4);
+      padding: 6px 14px;
+      border-radius: 8px;
+      border-left: 4px solid var(--neon-yellow);
+      border-right: 4px solid var(--neon-yellow);
+      margin-top: 6px;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    }
+
+    /* 脳汁メーター＆連打ボタンセクション */
+    .dopamine-counter-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .meter-label {
+      font-size: 0.8rem;
+      color: var(--neon-green);
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+
+    .dopa-meter {
+      width: 100%;
+      height: 22px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px var(--neon-green);
+    }
+
+    .dopa-meter::-webkit-meter-bar {
+      background: #111;
+      border: 2px solid var(--neon-green);
+      border-radius: 8px;
+    }
+
+    .dopa-meter::-webkit-meter-optimum-value {
+      background: var(--rainbow-gradient);
+    }
+
+    .dopa-value {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 900;
+      color: var(--neon-green);
+      text-shadow: 0 0 10px var(--neon-green);
+      letter-spacing: 2px;
+    }
+
+    .rush-button {
+      background: var(--rainbow-gradient);
+      background-size: 300% 300%;
+      color: #000;
+      border: 3px solid #fff;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 20px var(--neon-yellow), inset 0 0 10px #fff;
+      transition: transform 0.05s ease, filter 0.05s ease;
+      animation: gradient-btn 2s ease infinite;
+      outline: none;
+    }
+
+    .rush-button:active {
+      transform: scale(0.92);
+      filter: brightness(1.4);
+    }
+
+    @keyframes gradient-btn {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 下段：ドパガキ用 Subway Surfers 風パルクール無限ループ画面 */
+    .distraction-view {
+      background: #000;
+      border: 4px solid var(--neon-green);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px var(--neon-green);
+      position: relative;
+    }
+
+    .distraction-header {
+      background: rgba(57, 255, 20, 0.2);
+      padding: 6px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--neon-green);
+      border-bottom: 2px solid var(--neon-green);
+      font-weight: bold;
+    }
+
+    .canvas-wrap {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .runner-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 背景パーティクル Canvas */
+    .celebration-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    /* 浮遊ポップアップ文字 */
+    .floating-text {
+      position: fixed;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 10px #ff0, 0 0 20px #ff007f;
+      pointer-events: none;
+      z-index: 1000;
+      animation: float-up-fade 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+
+    @keyframes float-up-fade {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.6) rotate(var(--rot, 0deg));
+      }
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -100%) scale(1.3) rotate(var(--rot, 0deg));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(1.6) rotate(var(--rot, 0deg));
+      }
+    }
+  </style>
 </head>
 
-<body>
-    <p>今日の運勢は<%= result %>、<%= comment%>
-    </p>
+<body data-state="ready" data-shake="idle">
+  <!-- 電光掲示板風テロップ -->
+  <header class="dopa-ticker">
+    <aside class="ticker-track">
+      <span class="ticker-content">🚨 脳汁警報発令中 🚨 ドーパミン過剰分泌注意 🚨 スワイプ禁止 🚨 今日の運勢確定演出 🚨 脳汁ドバドバ大放出 🚨 チャンネル登録高評価 🚨 脳死周回推奨 🚨</span>
+      <span class="ticker-content">🚨 脳汁警報発令中 🚨 ドーパミン過剰分泌注意 🚨 スワイプ禁止 🚨 今日の運勢確定演出 🚨 脳汁ドバドバ大放出 🚨 チャンネル登録高評価 🚨 脳死周回推奨 🚨</span>
+    </aside>
+  </header>
+
+  <main class="dopa-viewport">
+    <!-- 上段：おみくじ結果表示 ＆ 脳汁フィーバー -->
+    <section class="omikuji-display" data-luck="<%= result %>">
+      <header class="display-header">
+        <span class="warning-badge">⚠️ SHORT-FORM BRAINROT EDITION ⚠️</span>
+        <h2 class="sub-headline">💥 脳汁確定おみくじスロット 💥</h2>
+      </header>
+
+      <article class="fortune-core">
+        <figure class="fortune-visual">
+          <span class="fortune-label">▼ TODAY'S DOPAMINE FORTUNE ▼</span>
+          <strong class="fortune-result"><%= result %></strong>
+          <figcaption class="fortune-comment"><%= comment %></figcaption>
+        </figure>
+      </article>
+
+      <section class="dopamine-counter-section">
+        <label for="dopa-meter" class="meter-label">脳汁分泌メーター (DOPAMINE LEVEL)</label>
+        <meter id="dopa-meter" class="dopa-meter" min="0" max="1000" value="999"></meter>
+        <output class="dopa-value" data-target="score">999,999,999</output>
+        <button type="button" class="rush-button" data-trigger="boost">
+          🔥 脳汁連打タップ (SOUND & DOPAMINE) 🔥
+        </button>
+      </section>
+    </section>
+
+    <!-- 下段：ドパガキ必須の Subway Surfers 風パルクール無限自動アニメーション -->
+    <section class="distraction-view">
+      <header class="distraction-header">
+        <p>🎮 注意力維持用サブウェイ風パルクール自動再生 🎮</p>
+      </header>
+      <figure class="canvas-wrap">
+        <canvas class="runner-canvas" width="400" height="240"></canvas>
+      </figure>
+    </section>
+  </main>
+
+  <!-- 紙吹雪・コイン・パーティクル描画キャンバス -->
+  <canvas class="celebration-particles"></canvas>
+
+  <!-- 浮遊テキスト用テンプレート -->
+  <template class="pop-dopa-template">
+    <span class="floating-text"></span>
+  </template>
+
+  <script>
+    // --- 1. Web Audio API サウンドエンジン ---
+    class DopaAudioEngine {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playJackpot() {
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98]; // C5, E5, G5, C6, E6, G6
+
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + i * 0.06);
+
+          gain.gain.setValueAtTime(0.15, now + i * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.25);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now + i * 0.06);
+          osc.stop(now + i * 0.06 + 0.25);
+        });
+      }
+
+      playCoin() {
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now); // B5
+        osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    }
+
+    // --- 2. Subway Surfers 風パルクールCanvasエンジン ---
+    class SubwayRunnerSimulator {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.player = { lane: 1, targetLane: 1, y: 0, vy: 0, isJumping: false };
+        this.lanes = [-70, 0, 70];
+        this.obstacles = [];
+        this.coins = [];
+        this.speed = 8;
+        this.distance = 0;
+        this.frame = 0;
+        this.init();
+      }
+
+      init() {
+        this.loop = this.loop.bind(this);
+        requestAnimationFrame(this.loop);
+      }
+
+      spawnObjects() {
+        if (this.frame % 35 === 0) {
+          const laneIdx = Math.floor(Math.random() * 3);
+          if (Math.random() > 0.4) {
+            this.obstacles.push({ lane: laneIdx, z: 500, type: 'train' });
+          } else {
+            this.coins.push({ lane: laneIdx, z: 500 });
+          }
+        }
+      }
+
+      update() {
+        this.frame++;
+        this.distance += this.speed;
+
+        // ランダムオート回避（ドパガキ向け無敵自動パルクール）
+        if (this.frame % 20 === 0) {
+          const danger = this.obstacles.find(o => o.z < 250 && o.z > 50 && o.lane === this.player.targetLane);
+          if (danger) {
+            if (Math.random() > 0.3) {
+              const safeLanes = [0, 1, 2].filter(l => l !== danger.lane);
+              this.player.targetLane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
+            } else if (!this.player.isJumping) {
+              this.player.isJumping = true;
+              this.player.vy = -12;
+            }
+          }
+        }
+
+        // ジャンプ物理
+        if (this.player.isJumping) {
+          this.player.y += this.player.vy;
+          this.player.vy += 0.8;
+          if (this.player.y >= 0) {
+            this.player.y = 0;
+            this.player.isJumping = false;
+          }
+        }
+
+        // 障害物＆コイン進行
+        for (let i = this.obstacles.length - 1; i >= 0; i--) {
+          this.obstacles[i].z -= this.speed;
+          if (this.obstacles[i].z < 0) this.obstacles.splice(i, 1);
+        }
+
+        for (let i = this.coins.length - 1; i >= 0; i--) {
+          this.coins[i].z -= this.speed;
+          if (this.coins[i].z < 0) this.coins.splice(i, 1);
+        }
+
+        this.spawnObjects();
+      }
+
+      draw() {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const ctx = this.ctx;
+
+        ctx.fillStyle = '#0f051d';
+        ctx.fillRect(0, 0, w, h);
+
+        const horizon = h * 0.35;
+        const vanishingX = w / 2;
+
+        // レール描画（擬似3Dパースペクティブ）
+        ctx.strokeStyle = '#39ff14';
+        ctx.lineWidth = 2;
+        [-120, -40, 40, 120].forEach(offset => {
+          ctx.beginPath();
+          ctx.moveTo(vanishingX, horizon);
+          ctx.lineTo(vanishingX + offset * 3, h);
+          ctx.stroke();
+        });
+
+        // 枕木アニメーション
+        const tieOffset = (this.distance % 40);
+        ctx.strokeStyle = 'rgba(57, 255, 20, 0.4)';
+        for (let z = tieOffset; z < 200; z += 30) {
+          const y = horizon + (h - horizon) * (z / 200);
+          const spread = (z / 200) * 360;
+          ctx.beginPath();
+          ctx.moveTo(vanishingX - spread, y);
+          ctx.lineTo(vanishingX + spread, y);
+          ctx.stroke();
+        }
+
+        // コイン描画
+        this.coins.forEach(c => {
+          const depth = (500 - c.z) / 500;
+          if (depth <= 0) return;
+          const y = horizon + (h - horizon) * depth;
+          const laneX = vanishingX + this.lanes[c.lane] * depth * 3.5;
+          const size = 6 + depth * 14;
+
+          ctx.fillStyle = '#ffe600';
+          ctx.beginPath();
+          ctx.arc(laneX, y - 10, size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 障害物（列車/ブロック）描画
+        this.obstacles.forEach(o => {
+          const depth = (500 - o.z) / 500;
+          if (depth <= 0) return;
+          const y = horizon + (h - horizon) * depth;
+          const laneX = vanishingX + this.lanes[o.lane] * depth * 3.5;
+          const ow = 25 * depth * 2.5;
+          const oh = 35 * depth * 2.5;
+
+          ctx.fillStyle = '#ff007f';
+          ctx.shadowColor = '#ff007f';
+          ctx.shadowBlur = 10;
+          ctx.fillRect(laneX - ow / 2, y - oh, ow, oh);
+          ctx.shadowBlur = 0;
+        });
+
+        // プレイヤー描画
+        const pLaneX = vanishingX + this.lanes[this.player.targetLane] * 3.2;
+        const py = h - 30 + this.player.y;
+
+        ctx.fillStyle = '#00f3ff';
+        ctx.shadowColor = '#00f3ff';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(pLaneX, py - 18, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(pLaneX - 10, py - 6, 20, 24);
+        ctx.shadowBlur = 0;
+      }
+
+      loop() {
+        this.update();
+        this.draw();
+        requestAnimationFrame(this.loop);
+      }
+    }
+
+    // --- 3. パーティクル祝賀エフェクト ---
+    class ParticleCelebration {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.loop = this.loop.bind(this);
+        requestAnimationFrame(this.loop);
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      burst(x, y, count = 30) {
+        const colors = ['#ff007f', '#00f3ff', '#ffe600', '#39ff14', '#ffffff'];
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 8 + 3;
+          this.particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 8 + 4,
+            life: 1,
+            decay: Math.random() * 0.02 + 0.015,
+            isCoin: Math.random() > 0.6
+          });
+        }
+      }
+
+      update() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.25; // 重力
+          p.life -= p.decay;
+          if (p.life <= 0) {
+            this.particles.splice(i, 1);
+          }
+        }
+      }
+
+      draw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.particles.forEach(p => {
+          this.ctx.globalAlpha = p.life;
+          this.ctx.fillStyle = p.color;
+          if (p.isCoin) {
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            this.ctx.fill();
+          } else {
+            this.ctx.fillRect(p.x, p.y, p.size, p.size);
+          }
+        });
+        this.ctx.globalAlpha = 1;
+      }
+
+      loop() {
+        this.update();
+        this.draw();
+        requestAnimationFrame(this.loop);
+      }
+    }
+
+    // --- 4. コントローラ ＆ ドーパミン爆増タップ ---
+    class DopaController {
+      constructor() {
+        this.audio = new DopaAudioEngine();
+        this.particleCanvas = document.querySelector('.celebration-particles');
+        this.particles = new ParticleCelebration(this.particleCanvas);
+
+        const runnerCanvas = document.querySelector('.runner-canvas');
+        this.runner = new SubwayRunnerSimulator(runnerCanvas);
+
+        this.boostBtn = document.querySelector('[data-trigger="boost"]');
+        this.scoreOutput = document.querySelector('[data-target="score"]');
+        this.dopaMeter = document.querySelector('.dopa-meter');
+        this.template = document.querySelector('.pop-dopa-template');
+
+        this.score = 999999999;
+        this.hypeWords = ['脳汁確定！', '神引き！', 'ドパドパ！', '失神注意！', '脳が溶ける！', 'チピチピ！', 'チャパチャパ！', '超大吉級！', '大爆発！', '草生える！'];
+
+        this.initEvents();
+      }
+
+      spawnFloatingText(x, y) {
+        if (!this.template) return;
+        const clone = this.template.content.cloneNode(true);
+        const span = clone.querySelector('.floating-text');
+        const word = this.hypeWords[Math.floor(Math.random() * this.hypeWords.length)];
+
+        span.textContent = word + ' +' + Math.floor(Math.random() * 50000 + 10000);
+        span.style.left = x + 'px';
+        span.style.top = y + 'px';
+        span.style.setProperty('--rot', (Math.random() * 30 - 15) + 'deg');
+
+        document.body.appendChild(span);
+        setTimeout(() => span.remove(), 800);
+      }
+
+      triggerShake() {
+        document.body.dataset.shake = 'active';
+        clearTimeout(this.shakeTimer);
+        this.shakeTimer = setTimeout(() => {
+          document.body.dataset.shake = 'idle';
+        }, 300);
+      }
+
+      onBoost(e) {
+        this.score += 777777;
+        this.scoreOutput.textContent = this.score.toLocaleString();
+
+        const x = e.clientX || window.innerWidth / 2;
+        const y = e.clientY || window.innerHeight / 2;
+
+        this.audio.playJackpot();
+        this.particles.burst(x, y, 40);
+        this.spawnFloatingText(x, y);
+        this.triggerShake();
+      }
+
+      initEvents() {
+        this.boostBtn.addEventListener('click', (e) => this.onBoost(e));
+
+        // 初回ロード演出
+        window.addEventListener('DOMContentLoaded', () => {
+          const rect = this.boostBtn.getBoundingClientRect();
+          this.particles.burst(rect.x + rect.width / 2, rect.y + rect.height / 2, 50);
+        });
+
+        // どこをクリックしても軽くコイン音が鳴る
+        window.addEventListener('pointerdown', (e) => {
+          if (e.target !== this.boostBtn) {
+            this.audio.playCoin();
+            this.particles.burst(e.clientX, e.clientY, 10);
+          }
+        });
+      }
+    }
+
+    // 初期化実行
+    new DopaController();
+  </script>
 </body>
 
 </html>
