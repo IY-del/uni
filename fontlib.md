@@ -632,6 +632,8 @@ typedef struct {
 - **戻り値**: なし (`void`)
 - **使用例**:
 
+   **使用例1: 等倍表示（標準設定: ROTATE_90，1倍）**
+
    ```c
   int patterns[1][8][8] = {{{0, 0, 1, 1, 0, 0, 0, 0},
                             {0, 0, 1, 1, 0, 0, 0, 0},
@@ -645,7 +647,7 @@ typedef struct {
   print_as_pattern(&view);
    ```
 
-- **出力例**:
+   出力例:
 
    ```text
    XXXX
@@ -654,6 +656,112 @@ typedef struct {
       XXXX
    XXXX
    XXXX
+
+
+   ```
+
+   **使用例2: 拡大表示（2倍スケール: new_pattern_view_doublescale）**
+
+   ```c
+  PatternView view2x = new_pattern_view_doublescale(1, patterns);
+  print_as_pattern(&view2x);
+   ```
+
+   出力例:
+
+   ```text
+    XXXXXXXX
+    XXXXXXXX
+    XXXXXXXX
+    XXXXXXXX
+          XXXXXXXX
+          XXXXXXXX
+          XXXXXXXX
+          XXXXXXXX
+    XXXXXXXX
+    XXXXXXXX
+    XXXXXXXX
+    XXXXXXXX
+
+
+
+
+   ```
+
+   **使用例3: 回転角度の指定（ROTATE_0, ROTATE_180, ROTATE_270）**
+
+   ```c
+  /* 0度（正立） */
+  view.rotation = ROTATE_0;
+  print_as_pattern(&view);
+
+  /* 180度回転 */
+  view.rotation = ROTATE_180;
+  print_as_pattern(&view);
+
+  /* 270度回転 */
+  view.rotation = ROTATE_270;
+  print_as_pattern(&view);
+   ```
+
+   出力例（ROTATE_0: 正立）:
+
+   ```text
+    XX
+    XX
+    XX
+  XXXXXX
+  XX  XX
+  XX  XX
+  XX  XX
+
+   ```
+
+   出力例（ROTATE_180: 上下左右反転）:
+
+   ```text
+
+  XX  XX
+  XX  XX
+  XX  XX
+  XXXXXX
+    XX
+    XX
+    XX
+   ```
+
+   出力例（ROTATE_270: 反時計回り90度回転）:
+
+   ```text
+
+
+     XXXX
+     XXXX
+  XXXX
+  XXXX
+     XXXX
+     XXXX
+   ```
+
+   **使用例4: 描画文字の変更（view.string）**
+
+   ```c
+  view.rotation = ROTATE_90;
+  view.string = "##";
+  print_as_pattern(&view);
+   ```
+
+   出力例:
+
+   ```text
+   ########
+   ########
+      ########
+      ########
+   ########
+   ########
+
+
    ```
 
 ---
