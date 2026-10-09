@@ -4,13 +4,18 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void printx(int flag) { printf("%s", flag ? "X" : " "); }
 
-void printxs(int flag, const char str[]) { printf("%s", flag ? str : " "); }
+void printxs(int flag, const char str[]) {
+  if (!str) return;
+  printf("%s", flag ? str : " ");
+}
 
 static PatternCoord rotate_coord(const PatternView* view, size_t x, size_t y) {
   PatternCoord coord = {0, 0};
+  if (!view) return coord;
   switch (view->rotation) {
     case ROTATE_0:
       coord.x = x;
@@ -18,14 +23,14 @@ static PatternCoord rotate_coord(const PatternView* view, size_t x, size_t y) {
       break;
     case ROTATE_90:
       coord.x = y;
-      coord.y = view->h - 1 - x;
+      coord.y = view->h > x ? view->h - 1 - x : 0;
       break;
     case ROTATE_180:
-      coord.x = view->w - 1 - x;
-      coord.y = view->h - 1 - y;
+      coord.x = view->w > x ? view->w - 1 - x : 0;
+      coord.y = view->h > y ? view->h - 1 - y : 0;
       break;
     case ROTATE_270:
-      coord.x = view->w - 1 - y;
+      coord.x = view->w > y ? view->w - 1 - y : 0;
       coord.y = x;
       break;
   }
@@ -34,7 +39,8 @@ static PatternCoord rotate_coord(const PatternView* view, size_t x, size_t y) {
 }
 
 PatternSize pattern_scaled_size(const PatternView* view) {
-  PatternSize size;
+  PatternSize size = {0, 0};
+  if (!view) return size;
 
   if (view->rotation == ROTATE_90 || view->rotation == ROTATE_270) {
     size.width = view->h * view->scale_w;
@@ -49,12 +55,18 @@ PatternSize pattern_scaled_size(const PatternView* view) {
 
 PatternCoord resolve_coord(const PatternView* view, size_t out_x,
                            size_t out_y) {
+  PatternCoord coord = {0, 0};
+  if (!view || view->scale_w == 0 || view->scale_h == 0) return coord;
   size_t logical_x = out_x / view->scale_w;
   size_t logical_y = out_y / view->scale_h;
   return rotate_coord(view, logical_x, logical_y);
 }
 
 PatternIterator new_iter(const PatternView* view) {
+  if (!view) {
+    PatternIterator it = {0};
+    return it;
+  }
   PatternSize size = pattern_scaled_size(view);
 
   PatternIterator it = {
@@ -70,6 +82,8 @@ PatternIterator new_iter(const PatternView* view) {
 }
 
 PatternEvent pattern_iterator_next(PatternIterator* it, PatternStep* step) {
+  if (!it || !step || !it->view) return PATTERN_EVENT_END;
+
   if (it->x >= it->out_w) {
     it->x = 0;
     it->y++;
@@ -94,6 +108,8 @@ PatternEvent pattern_iterator_next(PatternIterator* it, PatternStep* step) {
 }
 
 PatternEvent pattern_iterator_next_h(PatternIterator* it, PatternStep* step) {
+  if (!it || !step || !it->view) return PATTERN_EVENT_END;
+
   if (it->x >= it->out_w) {
     it->x = 0;
     it->ch++;
@@ -118,12 +134,12 @@ PatternEvent pattern_iterator_next_h(PatternIterator* it, PatternStep* step) {
 
 PatternView new_pattern_view(size_t count, void* pattern) {
   PatternView view = {.count = count,
-                      .h = PATTERN_DEFAULT_H,
-                      .w = PATTERN_DEFAULT_W,
+                      .h = 8,
+                      .w = 8,
                       .pattern = pattern,
                       .string = "X",
-                      .scale_w = PATTERN_SCALE_NORMAL,
-                      .scale_h = PATTERN_SCALE_NORMAL,
+                      .scale_w = 1,
+                      .scale_h = 1,
                       .rotation = ROTATE_90};
 
   return view;
@@ -131,12 +147,13 @@ PatternView new_pattern_view(size_t count, void* pattern) {
 
 PatternView new_pattern_view_doublescale(size_t count, void* pattern) {
   PatternView view = new_pattern_view(count, pattern);
-  view.scale_w = PATTERN_SCALE_DOUBLE;
-  view.scale_h = PATTERN_SCALE_DOUBLE;
+  view.scale_w = 2;
+  view.scale_h = 2;
   return view;
 }
 
 void print_as_pattern(const PatternView* view) {
+  if (!view || !view->pattern) return;
   int (*pattern)[view->h][view->w] = view->pattern;
   PatternIterator it = new_iter(view);
   PatternStep step;
@@ -155,22 +172,11 @@ void print_as_pattern(const PatternView* view) {
   putchar('\n');
 }
 
-int load_txt_to_8x8(const char filename[], int (**out)[8][8], size_t* out_n) {
-  int* flat;
-  int ret = load_txt(filename, 8, 8, &flat, out_n);
-  if (ret != 0) {
-    return ret;
-  }
-  *out = (int (*)[8][8])flat;
-  return 0;
-}
-
-int load_txt(const char* filename, size_t h, size_t w, int** out,
-             size_t* out_n) {
+static int read_bits(const char* filename, int** out_buf, size_t* out_len) {
   FILE* fp = fopen(filename, "r");
   if (!fp) return -1;
 
-  size_t cap = 1024, len = 0;
+  size_t cap = 256, len = 0;
   int* buf = malloc(cap * sizeof(int));
   if (!buf) {
     fclose(fp);
@@ -195,20 +201,65 @@ int load_txt(const char* filename, size_t h, size_t w, int** out,
   }
   fclose(fp);
 
-  size_t cell = h * w;
+  *out_buf = buf;
+  *out_len = len;
+  return 0;
+}
+
+static int pad_to_grid(int* buf, size_t len, size_t cell, int** out,
+                       size_t* out_n) {
   size_t n = (len + cell - 1) / cell;
-  int* arr = calloc(n * cell, sizeof(int));
-  if (!arr) {
+  size_t total = n * cell;
+
+  if (total == 0) {
+    free(buf);
+    *out = NULL;
+    *out_n = 0;
+    return 0;
+  }
+
+  int* res = realloc(buf, total * sizeof(int));
+  if (!res) {
     free(buf);
     return -2;
   }
 
-  for (size_t i = 0; i < len; i++) arr[i] = buf[i];
-  free(buf);
+  if (total > len) {
+    memset(&res[len], 0, (total - len) * sizeof(int));
+  }
 
-  *out = arr;
+  *out = res;
   *out_n = n;
   return 0;
 }
 
-void free_memory(void* arr) { free(arr); }
+int load_txt(const char* filename, size_t h, size_t w, int** out,
+             size_t* out_n) {
+  if (!filename || !out || !out_n || h == 0 || w == 0) return -1;
+  *out = NULL;
+  *out_n = 0;
+
+  int* raw = NULL;
+  size_t len = 0;
+  int ret = read_bits(filename, &raw, &len);
+  if (ret != 0) {
+    return ret;
+  }
+
+  return pad_to_grid(raw, len, h * w, out, out_n);
+}
+
+int load_txt_to_8x8(const char filename[], int (**out)[8][8], size_t* out_n) {
+  if (!filename || !out || !out_n) return -1;
+  int* flat = NULL;
+  int ret = load_txt(filename, 8, 8, &flat, out_n);
+  if (ret != 0) {
+    return ret;
+  }
+  *out = (int (*)[8][8])flat;
+  return 0;
+}
+
+void free_memory(void* arr) {
+  if (arr) free(arr);
+}
