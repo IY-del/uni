@@ -8,9 +8,11 @@
     "start": "node app4.js",
     "dr": "deno run --allow-net --allow-read --allow-env src/index.js"
   },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
   "devDependencies": {
-    "ejs": "^3.1.10",
-    "express": "^4.21.2"
+    "ejs": "^3.1.10"
   },
   "keywords": []
 }
